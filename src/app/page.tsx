@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { HeroPipeline } from '@/components/HeroPipeline';
 import { RecommendationEngine } from '@/components/RecommendationEngine';
@@ -31,8 +33,59 @@ import {
   GitBranch,
   HelpCircle,
   Clock,
-  Zap
+  Zap,
+  TrendingUp,
+  Star
 } from 'lucide-react';
+
+// ── Animated counter hook ─────────────────────────────────────────────────────
+function useCounter(target: number, duration = 1800) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started.current) {
+          started.current = true;
+          let start = 0;
+          const step = target / (duration / 16);
+          const timer = setInterval(() => {
+            start = Math.min(start + step, target);
+            setCount(Math.floor(start));
+            if (start >= target) clearInterval(timer);
+          }, 16);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [target, duration]);
+
+  return { count, ref };
+}
+
+// ── Stat item ─────────────────────────────────────────────────────────────────
+function AnimatedStat({ value, label, suffix = '', prefix = '' }: { value: number; label: string; suffix?: string; prefix?: string }) {
+  const { count, ref } = useCounter(value);
+  return (
+    <div ref={ref} className="text-center">
+      <div className="text-3xl sm:text-4xl font-black text-white font-mono">
+        {prefix}{count.toLocaleString()}{suffix}
+      </div>
+      <div className="text-xs sm:text-sm text-slate-400 mt-1 font-medium">{label}</div>
+    </div>
+  );
+}
+
+// ── College ticker ────────────────────────────────────────────────────────────
+const COLLEGES = [
+  'GCT Coimbatore', 'CIT Coimbatore', 'PSG Tech', 'CEG Chennai',
+  'MIT Manipal', 'SKCET CBE', 'REC Trichy', 'KCT Coimbatore',
+  'SNS Institutions', 'Thiagarajar CE', 'Sri Ramakrishna Engg', 'PSGR Krishnammal',
+];
 
 export default function HomePage() {
   const flagshipProjects = PROJECTS_DATA.filter((p) => p.isFlagship);
@@ -222,6 +275,60 @@ export default function HomePage() {
 
           {/* Hero Visual Pipeline with Floating Cards */}
           <HeroPipeline />
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 3.5 ANIMATED STATS STRIP                                     */}
+      {/* ============================================================ */}
+      <section className="py-14 bg-[#070b16] border-t border-b border-white/5 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-cyan/5 via-transparent to-brand-indigo/5 pointer-events-none" />
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-center gap-0">
+            {[
+              { value: 1420, label: 'Students Enrolled', suffix: '+', prefix: '' },
+              { value: 20, label: 'Verified Projects', suffix: '', prefix: '' },
+              { value: 8, label: 'Partner Colleges', suffix: '', prefix: '' },
+              { value: 49, label: 'Average Rating', suffix: '★', prefix: '4.' },
+            ].map((stat, i) => (
+              <div key={i} className="flex items-center">
+                {i > 0 && <div className="w-px h-14 bg-white/10 mx-8 sm:mx-14 hidden sm:block" />}
+                <AnimatedStat value={stat.value} label={stat.label} suffix={stat.suffix} prefix={stat.prefix} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 3.6 COLLEGE LOGO TICKER                                      */}
+      {/* ============================================================ */}
+      <section className="py-8 bg-[#060913] border-b border-white/5 overflow-hidden relative">
+        <p className="text-center text-[11px] font-mono text-slate-500 uppercase tracking-widest mb-5">
+          Trusted by students at these institutions
+        </p>
+        {/* Scrolling ticker via CSS animation */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes ticker-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .ticker-track { animation: ticker-scroll 28s linear infinite; }
+          .ticker-track:hover { animation-play-state: paused; }
+        ` }} />
+        <div className="relative">
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#060913] to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#060913] to-transparent z-10 pointer-events-none" />
+          <div className="flex ticker-track" style={{ width: 'max-content' }}>
+            {[...COLLEGES, ...COLLEGES].map((college, i) => (
+              <div key={i} className="flex-shrink-0 mx-4 px-5 py-2.5 rounded-xl bg-white/4 border border-white/8 flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md bg-brand-cyan/15 border border-brand-cyan/25 flex items-center justify-center">
+                  <span className="text-brand-cyan font-black text-[10px]">{college.charAt(0)}</span>
+                </div>
+                <span className="text-sm font-semibold text-slate-300 whitespace-nowrap">{college}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -1145,37 +1252,66 @@ export default function HomePage() {
       {/* ============================================================ */}
       {/* 19. FINAL CTA                                                */}
       {/* ============================================================ */}
-      <section className="py-24 bg-gradient-to-b from-[#070b16] to-[#04060d] border-t border-white/10 text-center relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-cyan/15 rounded-full blur-[120px] pointer-events-none" />
+      <section className="py-28 border-t border-white/10 text-center relative overflow-hidden bg-[#04060d]">
+        {/* Ambient Glows */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-cyan/10 rounded-full blur-[130px] pointer-events-none" />
+        <div className="absolute top-0 left-0 w-64 h-64 bg-brand-indigo/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-            Your next project starts here.
+          {/* Label */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-mono mb-6">
+            <span className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse" />
+            <span>START BUILDING TODAY</span>
+          </div>
+
+          <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-tight">
+            Your next project
+            <br />
+            <span className="text-gradient-cyan">starts here.</span>
           </h2>
-          <p className="mt-4 text-base sm:text-xl text-slate-300 max-w-xl mx-auto leading-relaxed">
-            Don't just submit a project. Build something you understand.
+
+          <p className="mt-5 text-base sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            Don't just submit a project. Build something real — that you understand down to the last transistor, API call, and deployment config.
           </p>
+
+          {/* Trust Social Proof */}
+          <div className="mt-8 inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-sm">
+            <div className="flex -space-x-2">
+              {['AK', 'VK', 'SR', 'DS', 'NR'].map((initials, i) => (
+                <div key={i} className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500/40 to-blue-600/40 border-2 border-[#04060d] flex items-center justify-center text-[9px] font-bold text-white">{initials}</div>
+              ))}
+            </div>
+            <div className="text-left">
+              <div className="text-white font-semibold text-xs">1,420+ students already building</div>
+              <div className="flex items-center gap-1 text-amber-400 text-[10px]">
+                {'★★★★★'.split('').map((s, i) => <span key={i}>{s}</span>)}
+                <span className="text-slate-400 ml-1">4.9/5 avg rating</span>
+              </div>
+            </div>
+          </div>
 
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/projects"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-base shadow-xl shadow-cyan-500/30 flex items-center justify-center gap-2 transition-all"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-base shadow-xl shadow-cyan-500/30 flex items-center justify-center gap-2 group transition-all hover:scale-[1.02]"
             >
-              <span>Explore Projects</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>Explore All 20 Projects</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              href="/signup"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-surface-50 hover:bg-surface-100 border border-white/20 text-white font-semibold text-base transition-all"
+              href="/dashboard"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 text-white font-semibold text-base transition-all"
             >
-              Start Building
+              Open Student Workspace
             </Link>
           </div>
 
-          <div className="mt-8 flex items-center justify-center gap-6 text-xs text-slate-400 font-mono">
-            <span>✓ Verified Schematics</span>
-            <span>✓ Real Source Code</span>
-            <span>✓ Viva Defense Ready</span>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 font-mono">
+            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-brand-cyan" />Verified Circuit Schematics</span>
+            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-brand-cyan" />Real Source Code</span>
+            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-brand-cyan" />IEEE Report Templates</span>
+            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-brand-cyan" />Viva Defense Ready</span>
           </div>
         </div>
       </section>
