@@ -71,6 +71,27 @@ export function ProjectCard({ project, customMatch, featured }: ProjectCardProps
           </button>
         </div>
 
+        {/* Dedicated Project Visual Thumbnail */}
+        <Link href={`/projects/${project.slug}`} className="block mb-4 group/thumb relative rounded-2xl overflow-hidden border border-white/10 hover:border-brand-cyan/50 transition-all bg-slate-950 aspect-[16/10]">
+          <img
+            src={project.gallery?.overview || `/projects/${project.slug}/overview.webp`}
+            alt={`${project.title} Visual Blueprint`}
+            className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-500"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a1020] via-transparent to-black/20 opacity-80" />
+          
+          {/* Badge overlays on thumbnail */}
+          <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-black/70 backdrop-blur-md border border-brand-cyan/40 text-brand-cyan">
+              {project.branch[0]}
+            </span>
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-black/70 backdrop-blur-md border border-white/15 text-slate-300">
+              6 Visuals
+            </span>
+          </div>
+        </Link>
+
         {/* Project Title & Tagline */}
         <Link href={`/projects/${project.slug}`} className="block group-hover:text-brand-cyan transition-colors">
           <h3 className="text-xl font-bold text-white mb-2 leading-snug group-hover:text-cyan-300">
@@ -80,12 +101,6 @@ export function ProjectCard({ project, customMatch, featured }: ProjectCardProps
         <p className="text-xs sm:text-sm text-slate-400 line-clamp-2 mb-4 leading-relaxed">
           {project.tagline}
         </p>
-
-        {/* Visual Concept Pill */}
-        <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 mb-4 text-[11px] font-mono text-slate-300 flex items-center gap-2">
-          <span className="text-brand-cyan text-xs">🖼️</span>
-          <span className="truncate">{project.visualSummary}</span>
-        </div>
 
         {/* Technology Pills: ECE IoT ESP32 AWS */}
         <div className="flex flex-wrap gap-1.5 mb-5">

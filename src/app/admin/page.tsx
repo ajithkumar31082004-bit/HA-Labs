@@ -59,14 +59,16 @@ export default function AdminPage() {
       projectType: 'Major Project',
       technologies: newTech.split(',').map((t) => t.trim()),
       difficulty: 'Intermediate',
+      budget: newBudget,
       budgetDisplay: newBudget,
       budgetMin: 3000,
       budgetMax: 5000,
       duration: '4–6 weeks',
       teamSize: '2–4',
-      hardware: ['ESP32', 'Sensors', 'Relay'],
+      hardware: ['ESP32 DevKit', 'Sensors', 'Relay Module'],
       software: ['C++', 'Node.js', 'AWS'],
       features: ['Real-time telemetry', 'Cloud integration'],
+      architecture: 'Sensors → ESP32 → Cloud API → Real-time Dashboard',
       architectureSteps: ['Sensors', 'Microcontroller', 'Cloud', 'Dashboard'],
       requirements: ['Basic electronics'],
       learningOutcomes: ['Embedded firmware', 'Cloud APIs'],
@@ -76,6 +78,20 @@ export default function AdminPage() {
       solution: 'Automated IoT telemetry with cloud tracking.',
       howItWorks: 'Sensors acquire data and stream via MQTT to cloud dashboard.',
       visualSummary: `${newTitle} + ESP32 + cloud dashboard`,
+      gallery: {
+        overview: '/projects/smart-parking-system/overview.webp',
+        hardware: '/projects/smart-parking-system/hardware.webp',
+        architecture: '/projects/smart-parking-system/architecture.webp',
+        dashboard: '/projects/smart-parking-system/dashboard.webp',
+        deployment: '/projects/smart-parking-system/deployment.webp',
+        prototype: '/projects/smart-parking-system/prototype.webp',
+      },
+      packageContents: [
+        'Full Commented Source Code',
+        'Pin-to-Pin Circuit Schematics',
+        'System Architecture Diagrams',
+        'External Examiner Viva Defense Questions'
+      ],
       galleryVisuals: [
         { title: 'Hardware Node', subtitle: 'Sensor interface & ESP32 controller', type: 'hardware', accentColor: '#00d2ff' }
       ],

@@ -17,6 +17,15 @@ export interface VisualSpec {
   accentColor: string;
 }
 
+export interface ProjectGallery {
+  overview: string;
+  hardware: string;
+  architecture: string;
+  dashboard: string;
+  deployment: string;
+  prototype: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -31,6 +40,7 @@ export interface Project {
   projectType: 'Mini Project' | 'Major Project' | 'Final Year Project' | 'Research Project' | 'Software Project';
   technologies: string[];
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  budget: string;
   budgetDisplay: string;
   budgetMin: number;
   budgetMax: number;
@@ -39,6 +49,7 @@ export interface Project {
   hardware: string[];
   software: string[];
   features: string[];
+  architecture: string;
   architectureSteps: string[];
   requirements: string[];
   learningOutcomes: string[];
@@ -46,7 +57,9 @@ export interface Project {
   defaultMatch: number;
   isFlagship?: boolean;
   visualSummary: string;
+  gallery: ProjectGallery;
   galleryVisuals: VisualSpec[];
+  packageContents: string[];
   vivaQuestions: VivaQuestion[];
   bom: BOMItem[];
   roadmap: { step: string; title: string; desc: string }[];
@@ -68,6 +81,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Major Project',
     technologies: ['ESP32', 'Sensors', 'Node.js', 'Express', 'MySQL', 'AWS', 'Docker', 'Nginx'],
     difficulty: 'Intermediate',
+    budget: '₹3,500–₹5,000',
     budgetDisplay: '₹3,500–₹5,000',
     budgetMin: 3500,
     budgetMax: 5000,
@@ -82,6 +96,7 @@ export const PROJECTS_DATA: Project[] = [
       'Driver reservation interface with dynamic slot allocation and QR confirmation',
       'Historical occupancy analytics for municipal parking operators'
     ],
+    architecture: 'Sensors (Sonar/RFID) → ESP32 Controller → API / MQTT Gateway → Node.js Backend → MySQL Database → AWS Cloud (Docker) → Web Dashboard',
     architectureSteps: ['Sensors (Sonar/RFID)', 'ESP32 Controller', 'API / MQTT Gateway', 'Node.js Backend', 'MySQL Database', 'AWS Cloud (Docker)', 'Web Dashboard'],
     requirements: ['Basic C/C++ familiarity for ESP32', 'Node.js runtime environment', 'MySQL database', 'Breadboard prototype wiring'],
     learningOutcomes: ['Microcontroller sensor interfacing & debounce algorithms', 'Asynchronous Wi-Fi networking & JSON payload serialization', 'RESTful API design and database transaction management', 'Containerization and cloud deployment on AWS'],
@@ -94,6 +109,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'System Architecture', subtitle: 'ESP32 → MQTT Broker → Node.js → MySQL → AWS EC2', type: 'architecture', accentColor: '#38bdf8' },
       { title: 'Live Driver Heatmap', subtitle: 'Responsive Tailwind CSS Dashboard with Slot Occupancy Grid', type: 'dashboard', accentColor: '#10b981' },
       { title: 'Cloud Container Deployment', subtitle: 'Dockerized Microservices on AWS EC2 with Nginx Reverse Proxy', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/smart-parking-system/overview.webp',
+      hardware: '/projects/smart-parking-system/hardware.webp',
+      architecture: '/projects/smart-parking-system/architecture.webp',
+      dashboard: '/projects/smart-parking-system/dashboard.webp',
+      deployment: '/projects/smart-parking-system/deployment.webp',
+      prototype: '/projects/smart-parking-system/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'Why choose ESP32 over Arduino Uno for this project?', answer: 'ESP32 has built-in 2.4GHz Wi-Fi and Bluetooth LE, dual-core 240MHz Tensilica LX6 processing, and ample RAM (520KB SRAM) enabling direct TLS/HTTPS telemetry transmission without external Wi-Fi shields like ESP8266 or ENC28J60.' },
@@ -137,6 +173,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Major Project',
     technologies: ['ESP32', 'Soil Sensor', 'MQTT', 'AWS', 'Node.js', 'DynamoDB', 'Relay'],
     difficulty: 'Intermediate',
+    budget: '₹2,000–₹4,000',
     budgetDisplay: '₹2,000–₹4,000',
     budgetMin: 2000,
     budgetMax: 4000,
@@ -151,6 +188,7 @@ export const PROJECTS_DATA: Project[] = [
       'SMS and push alert notifications when moisture drops below threshold',
       'Historical soil moisture and ambient temperature trend charts'
     ],
+    architecture: 'Capacitive Sensors → ESP32 Field Node → MQTT Broker → AWS IoT Core → Relational/DynamoDB → Drip Pump Actuator → Farmer Dashboard',
     architectureSteps: ['Capacitive Sensors', 'ESP32 Field Node', 'MQTT Broker', 'AWS IoT Core', 'Relational/DynamoDB', 'Drip Pump Actuator', 'Farmer Dashboard'],
     requirements: ['Analog ADC calibration understanding', 'Relay safe wiring', 'AWS account setup'],
     learningOutcomes: ['Low-power IoT sensor node configuration', 'MQTT Pub/Sub telemetry architecture', 'Automated irrigation control theory'],
@@ -163,6 +201,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'MQTT Telemetry Flow', subtitle: 'ESP32 → AWS IoT Core → Lambda Trigger', type: 'architecture', accentColor: '#00d2ff' },
       { title: 'Crop Analytics UI', subtitle: '30-Day Soil Moisture & Weather Correlation Charts', type: 'dashboard', accentColor: '#f59e0b' },
       { title: 'Automated Drip Relay', subtitle: 'Optoisolated Valve Control with Flyback Protection', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/smart-agriculture-irrigation/overview.webp',
+      hardware: '/projects/smart-agriculture-irrigation/hardware.webp',
+      architecture: '/projects/smart-agriculture-irrigation/architecture.webp',
+      dashboard: '/projects/smart-agriculture-irrigation/dashboard.webp',
+      deployment: '/projects/smart-agriculture-irrigation/deployment.webp',
+      prototype: '/projects/smart-agriculture-irrigation/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'Why use capacitive soil moisture sensors instead of resistive prong probes?', answer: 'Resistive probes pass electric current directly through wet soil, causing rapid electrochemical corrosion and electrode oxidation within weeks. Capacitive sensors are coated with protective solder mask and measure changes in capacitance, ensuring years of stable operation.' },
@@ -204,6 +263,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Major Project',
     technologies: ['ESP32', 'Current Sensor', 'AWS', 'InfluxDB', 'Grafana', 'Docker'],
     difficulty: 'Intermediate',
+    budget: '₹2,500–₹4,500',
     budgetDisplay: '₹2,500–₹4,500',
     budgetMin: 2500,
     budgetMax: 4500,
@@ -218,6 +278,7 @@ export const PROJECTS_DATA: Project[] = [
       'Real-time Grafana dashboard with live load widgets',
       'Surge alerts and peak load notification triggers'
     ],
+    architecture: 'SCT-013 CT Sensor → ADS1115 16-bit ADC → ESP32 Wi-Fi Node → InfluxDB Line Protocol → AWS Cloud Server → Grafana Live Dashboard',
     architectureSteps: ['SCT-013 CT Sensor', 'ADS1115 16-bit ADC', 'ESP32 Wi-Fi Node', 'InfluxDB Line Protocol', 'AWS Cloud Server', 'Grafana Live Dashboard'],
     requirements: ['AC electrical fundamentals (RMS, Power Factor)', 'Safe non-invasive sensor clipping'],
     learningOutcomes: ['Analog signal conditioning for AC circuits', 'Time-series database modeling', 'Industrial cloud telemetry visualization'],
@@ -230,6 +291,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Telemetry Data Pipeline', subtitle: 'ESP32 → InfluxDB Line Protocol → AWS EC2', type: 'architecture', accentColor: '#00d2ff' },
       { title: 'Grafana Power Dashboard', subtitle: 'Real-time Wattage, Power Factor, and Tariff Graphs', type: 'dashboard', accentColor: '#ec4899' },
       { title: 'Industrial Container Stack', subtitle: 'Docker-Compose with InfluxDB & Grafana Services', type: 'deployment', accentColor: '#10b981' },
+    ],
+    gallery: {
+      overview: '/projects/smart-energy-monitoring/overview.webp',
+      hardware: '/projects/smart-energy-monitoring/hardware.webp',
+      architecture: '/projects/smart-energy-monitoring/architecture.webp',
+      dashboard: '/projects/smart-energy-monitoring/dashboard.webp',
+      deployment: '/projects/smart-energy-monitoring/deployment.webp',
+      prototype: '/projects/smart-energy-monitoring/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'Why is an external 16-bit ADC (ADS1115) used instead of the internal ESP32 ADC?', answer: 'The internal ESP32 SAR ADC has non-linearity issues below 0.1V and above 2.8V and significant electrical noise. The ADS1115 provides a calibrated 16-bit delta-sigma ADC with programmable gain amplifier, giving clean waveform reproduction across small currents.' },
@@ -270,6 +352,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Major Project',
     technologies: ['ESP32', 'Energy Meter', 'Cloud', 'Node.js', 'WebSockets'],
     difficulty: 'Advanced',
+    budget: '₹3,000–₹6,000',
     budgetDisplay: '₹3,000–₹6,000',
     budgetMin: 3000,
     budgetMax: 6000,
@@ -278,6 +361,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['ESP32 Board', 'PZEM-004T v3.0 AC Multi-function Module', '100A Split-Core CT', 'Solid State Relay (SSR) 40A', 'Heatsink & Enclosure Box'],
     software: ['C++ Firmware', 'WebSockets', 'Node.js Backend', 'Tailwind CSS & Chart.js', 'PostgreSQL'],
     features: ['True RMS Voltage, Current, and kWh measurement', 'Dynamic load curtailment to prevent transformer overloads', 'Automated billing calculation with peak/off-peak rates', 'Emergency over-voltage and thermal safety interlocks'],
+    architecture: 'PZEM-004T Meter → ESP32 UART Bus → WebSockets Stream → Node.js Backend → PostgreSQL DB → EV Admin Portal',
     architectureSteps: ['PZEM-004T Meter', 'ESP32 UART Bus', 'WebSockets Stream', 'Node.js Backend', 'PostgreSQL DB', 'EV Admin Portal'],
     requirements: ['High-voltage safety precautions', 'UART serial communication basics'],
     learningOutcomes: ['AC power systems monitoring', 'Industrial safety relay control', 'Real-time billing calculation logic'],
@@ -289,6 +373,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Charging Gateway Flow', subtitle: 'ESP32 → WebSockets → PostgreSQL → Dashboard', type: 'architecture', accentColor: '#38bdf8' },
       { title: 'Billing & Telemetry UI', subtitle: 'Real-time kWh Counter and Tariff Estimator', type: 'dashboard', accentColor: '#10b981' },
       { title: 'Enclosure Setup', subtitle: '40A Solid State Relay with Thermal Heatsink', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/ev-charging-monitoring/overview.webp',
+      hardware: '/projects/ev-charging-monitoring/hardware.webp',
+      architecture: '/projects/ev-charging-monitoring/architecture.webp',
+      dashboard: '/projects/ev-charging-monitoring/dashboard.webp',
+      deployment: '/projects/ev-charging-monitoring/deployment.webp',
+      prototype: '/projects/ev-charging-monitoring/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'How does PZEM-004T measure power factor?', answer: 'PZEM-004T uses an integrated metering ASIC that detects zero-crossing points of voltage and current waveforms to measure phase shift angle φ, calculating power factor as cos(φ).' }
@@ -327,6 +432,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Mini Project',
     technologies: ['ESP32', 'Relay', 'MQTT', 'Firebase', 'Mobile'],
     difficulty: 'Beginner',
+    budget: '₹1,500–₹3,000',
     budgetDisplay: '₹1,500–₹3,000',
     budgetMin: 1500,
     budgetMax: 3000,
@@ -335,6 +441,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['ESP32 NodeMCU', '4-Channel 5V Optocoupler Relay Board', 'Push Button Switches', 'AC 230V to 5V Hi-Link Power Module', 'Enclosure Box'],
     software: ['Arduino C++', 'Firebase Realtime Database / MQTT', 'Flutter / Responsive Web App'],
     features: ['Control 4 appliances remotely from anywhere in the world', 'Physical switch state sync without software desynchronization', 'Voice control integration via Google Home / Alexa webhook', 'Timer and scheduler routines for automated light switching'],
+    architecture: 'Wall Switch / Mobile App → ESP32 Controller → Firebase / MQTT Broker → 4-Channel Relay Board → 230V Home Appliances',
     architectureSteps: ['Wall Switch / Mobile App', 'ESP32 Controller', 'Firebase / MQTT Broker', '4-Channel Relay Board', '230V Home Appliances'],
     requirements: ['Relay wiring safety when handling mains AC', 'Basic C++ coding'],
     learningOutcomes: ['GPIO interrupt handling for manual switches', 'Cloud database real-time listeners', 'Safe AC load switching'],
@@ -346,6 +453,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Dual Control Architecture', subtitle: 'Physical Wall Switch + Cloud Real-Time Database', type: 'architecture', accentColor: '#00d2ff' },
       { title: 'Mobile Control Dashboard', subtitle: 'One-Tap Toggle UI with Scheduling & Timer Controls', type: 'dashboard', accentColor: '#818cf8' },
       { title: 'In-Wall Installation', subtitle: 'Compact PCB Module Fitting Standard Switchboard Gang Boxes', type: 'deployment', accentColor: '#f59e0b' },
+    ],
+    gallery: {
+      overview: '/projects/iot-smart-home-automation/overview.webp',
+      hardware: '/projects/iot-smart-home-automation/hardware.webp',
+      architecture: '/projects/iot-smart-home-automation/architecture.webp',
+      dashboard: '/projects/iot-smart-home-automation/dashboard.webp',
+      deployment: '/projects/iot-smart-home-automation/deployment.webp',
+      prototype: '/projects/iot-smart-home-automation/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'How do you keep physical wall switch state synchronized with the mobile app?', answer: 'We connect physical wall switches to ESP32 digital input pins configured with CHANGE interrupts. When a wall switch toggles, the interrupt fires, inverts the relay state, and immediately pushes the new state to the cloud.' }
@@ -384,6 +512,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Mini Project',
     technologies: ['ESP32', 'MQ Sensors', 'GSM', 'Cloud', 'Relay'],
     difficulty: 'Beginner',
+    budget: '₹1,500–₹3,000',
     budgetDisplay: '₹1,500–₹3,000',
     budgetMin: 1500,
     budgetMax: 3000,
@@ -392,6 +521,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['ESP32 NodeMCU', 'MQ-2 Combustible Gas & Smoke Sensor', 'Infrared Flame Sensor', 'SIM800L GSM Module', '5V Relay for Exhaust Fan', 'Piezo Active Buzzer'],
     software: ['Arduino C++', 'Twilio / GSM AT Commands', 'Thingspeak / Cloud Dashboard'],
     features: ['Sub-second gas PPM detection for LPG, Propane, and Smoke', 'Optical flame detection sensitive to 760nm-1100nm infrared spectrum', 'Automatic relay trigger powering exhaust ventilation fan', 'Emergency SMS and call dispatched to building manager phone'],
+    architecture: 'MQ-2 & Flame Sensors → ESP32 Controller → Buzzer & Relay Exhaust → GSM Module / Cloud → Manager Mobile Alert',
     architectureSteps: ['MQ-2 & Flame Sensors', 'ESP32 Controller', 'Buzzer & Relay Exhaust', 'GSM Module / Cloud', 'Manager Mobile Alert'],
     requirements: ['Breadboard prototyping basics', 'Sensor preheat calibration awareness'],
     learningOutcomes: ['Gas sensor analog calibration curves', 'Cellular AT command automation', 'Emergency life-safety control logic'],
@@ -403,6 +533,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Safety Signal Pipeline', subtitle: 'Sensor Threshold → Hardware Interlock → GSM SMS Alert', type: 'architecture', accentColor: '#ec4899' },
       { title: 'Live PPM Telemetry UI', subtitle: 'Ambient Gas Concentration Gauge & Hazard History', type: 'dashboard', accentColor: '#00d2ff' },
       { title: 'Ventilation Relay Unit', subtitle: 'Automatic 12V Exhaust Fan Trigger & Siren', type: 'deployment', accentColor: '#10b981' },
+    ],
+    gallery: {
+      overview: '/projects/iot-fire-gas-detection/overview.webp',
+      hardware: '/projects/iot-fire-gas-detection/hardware.webp',
+      architecture: '/projects/iot-fire-gas-detection/architecture.webp',
+      dashboard: '/projects/iot-fire-gas-detection/dashboard.webp',
+      deployment: '/projects/iot-fire-gas-detection/deployment.webp',
+      prototype: '/projects/iot-fire-gas-detection/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'Why does an MQ-2 sensor require a preheating cycle before calibration?', answer: 'MQ-2 uses a tin dioxide (SnO2) sensing layer that must reach an internal operating temperature of around 200-300°C for oxygen ions to absorb on its surface, stabilizing the baseline resistance Ro.' }
@@ -442,6 +593,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Mini Project',
     technologies: ['Arduino/ESP32', 'LDR', 'PIR', 'PWM', 'Relay'],
     difficulty: 'Beginner',
+    budget: '₹800–₹2,000',
     budgetDisplay: '₹800–₹2,000',
     budgetMin: 800,
     budgetMax: 2000,
@@ -450,6 +602,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['Arduino Uno / ESP32', 'LDR Light Sensor', 'HC-SR501 PIR Motion Sensors (x2)', 'High-power 1W White LEDs', 'TIP122 Darlington Transistors', 'Resistor Divider'],
     software: ['Arduino C++', 'Fritzing Schematics'],
     features: ['Automatic daylight lockout preventing daytime light operation', 'Smooth PWM dimming transitions (20% idle, 100% detected)', 'Up to 45% municipal energy savings compared to timer lighting', 'Low-cost build ideal for rapid 1-2 week semester deliverables'],
+    architecture: 'LDR & PIR Sensors → Microcontroller Analog & Digital IO → PWM Dimming Comparator → Power Transistor Driver → LED Street Light Array',
     architectureSteps: ['LDR & PIR Sensors', 'Microcontroller Analog & Digital IO', 'PWM Dimming Comparator', 'Power Transistor Driver', 'LED Street Light Array'],
     requirements: ['Basic electronics and resistor divider circuits'],
     learningOutcomes: ['PWM duty cycle modulation', 'Comparator circuits and hysteresis', 'Power transistor switching'],
@@ -461,6 +614,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'PWM Dimming Control Logic', subtitle: 'Ambient Lux Comparator → PWM Duty Cycle Controller', type: 'architecture', accentColor: '#00d2ff' },
       { title: 'Energy Savings Meter', subtitle: 'Cumulative kWh Comparison (Standard vs Dynamic PWM)', type: 'dashboard', accentColor: '#10b981' },
       { title: 'Breadboard Road Mockup', subtitle: 'Miniature Street Pole Mockup with Multi-Zone Switching', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/smart-street-light-system/overview.webp',
+      hardware: '/projects/smart-street-light-system/hardware.webp',
+      architecture: '/projects/smart-street-light-system/architecture.webp',
+      dashboard: '/projects/smart-street-light-system/dashboard.webp',
+      deployment: '/projects/smart-street-light-system/deployment.webp',
+      prototype: '/projects/smart-street-light-system/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'How is energy savings calculated for this system?', answer: 'Standard 150W streetlights run 12 hours at full power = 1.8 kWh/pole/night. With dynamic PWM dimming to 20% (30W) during 12AM-5AM low-traffic hours, consumption drops to ~0.96 kWh, yielding 46% energy savings.' }
@@ -499,6 +673,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Major Project',
     technologies: ['ESP32', 'Ultrasonic', 'GPS', 'Cloud', 'Node.js', 'Google Maps API'],
     difficulty: 'Intermediate',
+    budget: '₹2,000–₹4,000',
     budgetDisplay: '₹2,000–₹4,000',
     budgetMin: 2000,
     budgetMax: 4000,
@@ -507,6 +682,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['ESP32 DevKit', 'JSN-SR04T Waterproof Ultrasonic Sensor', 'NEO-6M GPS Module', '18650 Li-ion Battery & TP4056 Charger', 'Sealed Enclosure'],
     software: ['Arduino C++', 'Node.js REST API', 'Leaflet / Google Maps API', 'MongoDB Atlas'],
     features: ['Waterproof ultrasonic sensor measuring bin depth without moisture damage', 'Real-time bin fill percentage calculation with tilt/vandalism detection', 'Interactive municipal map visualizing red/yellow/green bin statuses', 'Dynamic traveling salesman route optimization for collection trucks'],
+    architecture: 'Ultrasonic & GPS Sensors → ESP32 Wi-Fi/GSM → Cloud REST API → MongoDB Store → Municipal Dispatcher Map',
     architectureSteps: ['Ultrasonic & GPS Sensors', 'ESP32 Wi-Fi/GSM', 'Cloud REST API', 'MongoDB Store', 'Municipal Dispatcher Map'],
     requirements: ['Ultrasonic distance calculation principles', 'Basic web mapping (Leaflet/Maps)'],
     learningOutcomes: ['Low-power deep sleep battery optimization', 'Geographic coordinate parsing (NMEA GPS)', 'Fleet route optimization algorithms'],
@@ -518,6 +694,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Municipal Telemetry Flow', subtitle: 'Bin Node → Cloud Ingestion → Route Optimization Engine', type: 'architecture', accentColor: '#38bdf8' },
       { title: 'City Bin Dispatcher Map', subtitle: 'Live Leaflet Map with Color-Coded Capacity Markers', type: 'dashboard', accentColor: '#10b981' },
       { title: 'Rugged Enclosure', subtitle: 'Battery-Powered IP65 Weatherproof Bin Lid Mount', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/smart-waste-management/overview.webp',
+      hardware: '/projects/smart-waste-management/hardware.webp',
+      architecture: '/projects/smart-waste-management/architecture.webp',
+      dashboard: '/projects/smart-waste-management/dashboard.webp',
+      deployment: '/projects/smart-waste-management/deployment.webp',
+      prototype: '/projects/smart-waste-management/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'Why use JSN-SR04T instead of HC-SR04 for waste bins?', answer: 'HC-SR04 has open transducer cones vulnerable to moisture, dust, and acidic fumes from decomposing organic garbage. JSN-SR04T has an integrated sealed waterproof probe designed for harsh environments.' }
@@ -556,6 +753,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Mini Project',
     technologies: ['ESP32', 'RFID', 'MySQL', 'Web', 'PHP/Node.js'],
     difficulty: 'Beginner',
+    budget: '₹1,500–₹3,000',
     budgetDisplay: '₹1,500–₹3,000',
     budgetMin: 1500,
     budgetMax: 3000,
@@ -564,6 +762,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['ESP32 DevKit', 'RC522 13.56MHz RFID Reader', '13.56MHz RFID Cards/Keyfobs (x5)', 'I2C 16x2 LCD Display', 'Buzzer & Status LEDs'],
     software: ['Arduino C++', 'Node.js or PHP Backend', 'MySQL Database', 'Tailwind CSS Admin Portal'],
     features: ['Instant contactless card tap logging under 500ms', 'I2C LCD feedback displaying student name and roll number', 'Automated percentage calculation per subject with low-attendance warnings', 'CSV / Excel report export for college faculty and department heads'],
+    architecture: 'RFID Card Tap → RC522 SPI Reader → ESP32 Controller → REST API Post → MySQL Attendance Table → Faculty Web Portal',
     architectureSteps: ['RFID Card Tap', 'RC522 SPI Reader', 'ESP32 Controller', 'REST API Post', 'MySQL Attendance Table', 'Faculty Web Portal'],
     requirements: ['SPI bus communication fundamentals', 'Basic SQL table operations'],
     learningOutcomes: ['RFID transponder protocols (ISO 14443A)', 'Embedded HTTP client requests', 'Relational database schema modeling for academic records'],
@@ -575,6 +774,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Attendance Dataflow', subtitle: 'Card UID → ESP32 SPI → REST API → MySQL Database', type: 'architecture', accentColor: '#38bdf8' },
       { title: 'Faculty Attendance Portal', subtitle: 'Automated Subject Attendance Percentage & CSV Export', type: 'dashboard', accentColor: '#10b981' },
       { title: 'Classroom Mounting Mockup', subtitle: 'Compact Standalone Desk Terminal with Audio Confirmation', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/rfid-smart-attendance/overview.webp',
+      hardware: '/projects/rfid-smart-attendance/hardware.webp',
+      architecture: '/projects/rfid-smart-attendance/architecture.webp',
+      dashboard: '/projects/rfid-smart-attendance/dashboard.webp',
+      deployment: '/projects/rfid-smart-attendance/deployment.webp',
+      prototype: '/projects/rfid-smart-attendance/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'What frequency does the RC522 RFID reader operate at and what protocol does it use?', answer: 'RC522 operates at high-frequency 13.56MHz using the ISO/IEC 14443A protocol, communicating with the microcontroller via SPI (Serial Peripheral Interface) bus.' }
@@ -613,6 +833,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Mini Project',
     technologies: ['ESP32', 'DHT22', 'MQ135', 'AWS', 'Grafana'],
     difficulty: 'Beginner',
+    budget: '₹1,500–₹3,500',
     budgetDisplay: '₹1,500–₹3,500',
     budgetMin: 1500,
     budgetMax: 3500,
@@ -621,6 +842,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['ESP32 NodeMCU', 'MQ-135 Air Quality & Gas Sensor', 'DHT22 Precision Temp & Humidity Sensor', '0.96 inch I2C OLED Display', '5V Power Supply'],
     software: ['Arduino C++', 'AWS IoT Core / Thingspeak', 'Chart.js Dashboard'],
     features: ['Real-time Air Quality Index (AQI) score calculation', 'Detection of CO2, NH3, Benzene, and Alcohol volatile vapors', 'Temperature and relative humidity tracking with heat index calculation', 'Local OLED screen display plus cloud telemetry graphing'],
+    architecture: 'MQ-135 & DHT22 Sensors → ESP32 Sampling → I2C OLED Display → AWS IoT Core → Grafana / Web Dashboard',
     architectureSteps: ['MQ-135 & DHT22 Sensors', 'ESP32 Sampling', 'I2C OLED Display', 'AWS IoT Core', 'Grafana / Web Dashboard'],
     requirements: ['Analog sensor calibration understanding', 'Basic I2C bus wiring'],
     learningOutcomes: ['Air quality index formula calculation', 'Gas sensor baseline resistance calibration', 'Cloud telemetry graphing'],
@@ -632,6 +854,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Air Quality Pipeline', subtitle: 'Raw Sensor Volts → AQI Math → AWS IoT Core Stream', type: 'architecture', accentColor: '#00d2ff' },
       { title: 'AQI Weather Dashboard', subtitle: 'Live Heat Index, Gas Parts-Per-Million & Historical Curves', type: 'dashboard', accentColor: '#f59e0b' },
       { title: 'Desk Weather Station', subtitle: 'Compact Acrylic Stand with Real-Time OLED Readout', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/iot-environmental-monitoring/overview.webp',
+      hardware: '/projects/iot-environmental-monitoring/hardware.webp',
+      architecture: '/projects/iot-environmental-monitoring/architecture.webp',
+      dashboard: '/projects/iot-environmental-monitoring/dashboard.webp',
+      deployment: '/projects/iot-environmental-monitoring/deployment.webp',
+      prototype: '/projects/iot-environmental-monitoring/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'What gases does the MQ-135 sensor detect and how is AQI derived?', answer: 'MQ-135 is sensitive to NH3, NOx, Alcohol, Benzene, Smoke, and CO2. By measuring surface resistance Rs relative to baseline clean air Ro (Rs/Ro ratio), the firmware calculates parts-per-million (PPM) values and maps them to standard AQI brackets (0-500).' }
@@ -671,6 +914,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Major Project',
     technologies: ['ESP32', 'Sensors', 'Node.js', 'Cloud', 'WebSockets', 'React'],
     difficulty: 'Intermediate',
+    budget: '₹2,500–₹5,000',
     budgetDisplay: '₹2,500–₹5,000',
     budgetMin: 2500,
     budgetMax: 5000,
@@ -679,6 +923,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['ESP32 WROOM-32', 'MAX30102 Pulse Oximeter & Heart Rate Module', 'AD8232 Single Lead ECG Kit', 'MPU6050 6-DOF IMU', 'Li-ion Battery & TP4056'],
     software: ['C++ Firmware', 'WebSockets', 'React.js Charting Interface', 'Node.js Server'],
     features: ['Live real-time ECG waveform rendering at 60Hz update rate', 'Blood oxygen (SpO2) and BPM calculation with motion artifact filtering', '3-axis accelerometer fall impact detection algorithm', 'Instant alert dispatched to nurse workstation upon sudden impact'],
+    architecture: 'Sensors (ECG → SpO2 → IMU) → ESP32 Sampling → Encrypted WebSockets → Node.js Central Hub → Nurse Station Visualizer',
     architectureSteps: ['Sensors (ECG, SpO2, IMU)', 'ESP32 Sampling', 'Encrypted WebSockets', 'Node.js Central Hub', 'Nurse Station Visualizer'],
     requirements: ['Biomedical sensor fundamentals', 'Safe low-voltage power isolation'],
     learningOutcomes: ['Biomedical signal processing (QRS complex detection)', 'Wearable low-power ergonomics', 'Real-time telemetry streaming'],
@@ -690,6 +935,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Real-Time Telemetry Flow', subtitle: 'Wearable ESP32 → WebSockets → Central Nurse Station', type: 'architecture', accentColor: '#00d2ff' },
       { title: 'Nurse Monitoring Canvas', subtitle: 'Live 60Hz ECG Trace, SpO2 & Heart Rate Graph', type: 'dashboard', accentColor: '#10b981' },
       { title: 'Wearable Prototype Box', subtitle: 'Rechargeable LiPo Battery Housing with Fall Detector', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/iot-patient-health-monitoring/overview.webp',
+      hardware: '/projects/iot-patient-health-monitoring/hardware.webp',
+      architecture: '/projects/iot-patient-health-monitoring/architecture.webp',
+      dashboard: '/projects/iot-patient-health-monitoring/dashboard.webp',
+      deployment: '/projects/iot-patient-health-monitoring/deployment.webp',
+      prototype: '/projects/iot-patient-health-monitoring/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'How does the MPU6050 detect an actual patient fall vs normal movement?', answer: 'The algorithm evaluates a two-stage threshold: First, a momentary freefall condition (resultant vector < 0.5g), followed within 200ms by an impact peak exceeding 3.0g, concluded by 5 seconds of post-fall inactivity.' }
@@ -729,6 +995,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Mini Project',
     technologies: ['Arduino', 'Ultrasonic', 'Motor Driver', 'C++'],
     difficulty: 'Beginner',
+    budget: '₹1,500–₹3,000',
     budgetDisplay: '₹1,500–₹3,000',
     budgetMin: 1500,
     budgetMax: 3000,
@@ -737,6 +1004,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['Arduino Uno R3', 'HC-SR04 Ultrasonic Sensor', 'SG90 Micro Servo', 'L298N Dual H-Bridge Motor Driver', '2WD Robot Chassis + BO Motors', '7.4V 2S Li-ion Battery'],
     software: ['Arduino C++', 'Fritzing Schematics'],
     features: ['180-degree servo radar scanner evaluating left and right clearances', 'Closed-loop obstacle avoidance avoiding head-on collisions and dead ends', 'PWM differential motor speed control for smooth turning radiuses', 'Complete hardware chassis kit ideal for hands-on robotics beginners'],
+    architecture: 'HC-SR04 Ultrasonic Sonar → SG90 Servo Head → Arduino Control Logic → L298N H-Bridge Driver → DC Gear Motors',
     architectureSteps: ['HC-SR04 Ultrasonic Sonar', 'SG90 Servo Head', 'Arduino Control Logic', 'L298N H-Bridge Driver', 'DC Gear Motors'],
     requirements: ['Basic electronics and DC motor principles'],
     learningOutcomes: ['H-bridge motor driver direction control', 'Servo angular positioning PWM', 'Reactive obstacle avoidance algorithms'],
@@ -748,6 +1016,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Sonar Scanning Pipeline', subtitle: 'Forward Obstacle Trigger → 180° Servo Sweep → Motor Turn', type: 'architecture', accentColor: '#38bdf8' },
       { title: 'Navigation Decision Tree', subtitle: 'Comparative Clearance Evaluation Algorithm', type: 'dashboard', accentColor: '#10b981' },
       { title: 'Assembled Autonomous Bot', subtitle: 'Complete Autonomous Wheeled Rover with 2S Li-ion Power', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/obstacle-avoidance-robot/overview.webp',
+      hardware: '/projects/obstacle-avoidance-robot/hardware.webp',
+      architecture: '/projects/obstacle-avoidance-robot/architecture.webp',
+      dashboard: '/projects/obstacle-avoidance-robot/dashboard.webp',
+      deployment: '/projects/obstacle-avoidance-robot/deployment.webp',
+      prototype: '/projects/obstacle-avoidance-robot/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'How does an H-Bridge motor driver control DC motor direction?', answer: 'An H-Bridge uses 4 switching transistors arranged like an "H". By turning on diagonal transistor pairs, current flows through the motor in one direction; turning on the opposing diagonal pair reverses current flow and motor rotation.' }
@@ -787,6 +1076,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Major Project',
     technologies: ['Python', 'OpenCV', 'ESP32', 'Cloud', 'Twilio'],
     difficulty: 'Advanced',
+    budget: '₹3,000–₹6,000',
     budgetDisplay: '₹3,000–₹6,000',
     budgetMin: 3000,
     budgetMax: 6000,
@@ -795,6 +1085,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['HD USB Camera / IP Webcam', 'ESP32 NodeMCU', 'NEO-6M GPS Module', 'Piezo Buzzer & Indicator LEDs'],
     software: ['Python 3.10', 'OpenCV & NumPy', 'Flask REST API', 'Twilio SMS API', 'Tailwind CSS Monitor'],
     features: ['Real-time optical flow velocity tracking detecting sudden deceleration impacts', 'Vehicle collision bounding box intersection and deformation analysis', 'Automated GPS location coordinate extraction from roadside unit', 'Emergency SMS and call alert dispatched to nearest emergency ward'],
+    architecture: 'Camera Video Feed → OpenCV Optical Flow → Crash Confidence Score → ESP32 GPS Telemetry → Cloud SOS Webhook',
     architectureSteps: ['Camera Video Feed', 'OpenCV Optical Flow', 'Crash Confidence Score', 'ESP32 GPS Telemetry', 'Cloud SOS Webhook'],
     requirements: ['Python and OpenCV basics', 'Optical flow motion vector concepts'],
     learningOutcomes: ['Computer vision motion tracking algorithms', 'Hardware-software serial communication', 'Emergency emergency response automation'],
@@ -806,6 +1097,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Crash Detection Pipeline', subtitle: 'Frame Differencing → Motion Centroid Discontinuity → SOS Webhook', type: 'architecture', accentColor: '#ec4899' },
       { title: 'Emergency Dispatch Portal', subtitle: 'Live Crash Incident Map with Pre-Impact Snapshot', type: 'dashboard', accentColor: '#f59e0b' },
       { title: 'Roadside Edge Controller', subtitle: 'ESP32 with GPS Module & Cellular SMS Transmitter', type: 'deployment', accentColor: '#10b981' },
+    ],
+    gallery: {
+      overview: '/projects/ai-accident-detection/overview.webp',
+      hardware: '/projects/ai-accident-detection/hardware.webp',
+      architecture: '/projects/ai-accident-detection/architecture.webp',
+      dashboard: '/projects/ai-accident-detection/dashboard.webp',
+      deployment: '/projects/ai-accident-detection/deployment.webp',
+      prototype: '/projects/ai-accident-detection/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'How does optical flow detect a vehicle crash?', answer: 'Optical flow calculates velocity vectors between consecutive video frames. A collision generates sudden, sharp discontinuities in motion magnitude and direction (extreme negative acceleration followed by abrupt vector scatter) differing sharply from normal smooth vehicle trajectories.' }
@@ -843,6 +1155,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Final Year Project',
     technologies: ['Python', 'OpenCV', 'YOLO', 'AWS', 'Telegram API'],
     difficulty: 'Advanced',
+    budget: '₹2,000–₹5,000',
     budgetDisplay: '₹2,000–₹5,000',
     budgetMin: 2000,
     budgetMax: 5000,
@@ -856,6 +1169,7 @@ export const PROJECTS_DATA: Project[] = [
       'Instant snapshot delivery to facility security staff via Telegram bot',
       'Cloud storage backup of flagged security incident video clips on AWS S3'
     ],
+    architecture: 'Camera RTSP Stream → Frame Extraction → YOLOv8 Inference → Tripwire Polygon Logic → AWS S3 Snapshot Upload → Telegram Alert Dispatch',
     architectureSteps: ['Camera RTSP Stream', 'Frame Extraction', 'YOLOv8 Inference', 'Tripwire Polygon Logic', 'AWS S3 Snapshot Upload', 'Telegram Alert Dispatch'],
     requirements: ['Python and OpenCV proficiency', 'Basic deep learning object detection concepts'],
     learningOutcomes: ['Model quantization and edge neural inference', 'Spatial polygon intersection geometry in computer vision', 'Asynchronous cloud webhook alert pipelines'],
@@ -868,6 +1182,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'YOLOv8 Neural Pipeline', subtitle: 'Frame Ingestion → TensorRT / ONNX Engine → Tripwire Logic', type: 'architecture', accentColor: '#38bdf8' },
       { title: 'Live Surveillance Console', subtitle: 'Multi-Camera Grid with Intrusion Event Log and Replay', type: 'dashboard', accentColor: '#ec4899' },
       { title: 'Edge Deployment Container', subtitle: 'Dockerized OpenCV & FastAPI Service with GPU Acceleration', type: 'deployment', accentColor: '#10b981' },
+    ],
+    gallery: {
+      overview: '/projects/ai-cctv-surveillance/overview.webp',
+      hardware: '/projects/ai-cctv-surveillance/hardware.webp',
+      architecture: '/projects/ai-cctv-surveillance/architecture.webp',
+      dashboard: '/projects/ai-cctv-surveillance/dashboard.webp',
+      deployment: '/projects/ai-cctv-surveillance/deployment.webp',
+      prototype: '/projects/ai-cctv-surveillance/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'Why choose YOLOv8 over two-stage detectors like Faster R-CNN?', answer: 'Faster R-CNN uses a two-stage Region Proposal Network (RPN) which is computationally expensive and runs at only ~4-6 FPS on edge CPUs. YOLOv8 is a single-shot detector treating detection as a direct regression problem, achieving 25+ FPS while maintaining high mean Average Precision (mAP).' },
@@ -906,6 +1241,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Major Project',
     technologies: ['Python', 'ML', 'Linux', 'Scapy', 'Flask'],
     difficulty: 'Advanced',
+    budget: '₹500–₹2,000',
     budgetDisplay: '₹500–₹2,000',
     budgetMin: 500,
     budgetMax: 2000,
@@ -914,6 +1250,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['Standard Laptop / Linux VM (PC/Raspberry Pi)'],
     software: ['Python 3.10', 'Scapy Packet Sniffer', 'Scikit-Learn (Random Forest)', 'Flask REST API', 'Chart.js Dashboard'],
     features: ['Real-time raw packet sniffing with promiscuous mode network interface', 'Extraction of 20+ flow statistical features matching NSL-KDD / CIC-IDS datasets', 'Detection of SYN floods, Port Scans, and Brute Force SSH attacks', 'Interactive SOC dashboard showing live packet throughput and threat level'],
+    architecture: 'Raw Network Interface → Scapy Packet Sniffer → Flow Feature Extractor → Random Forest ML Model → SOC Threat Dashboard',
     architectureSteps: ['Raw Network Interface', 'Scapy Packet Sniffer', 'Flow Feature Extractor', 'Random Forest ML Model', 'SOC Threat Dashboard'],
     requirements: ['Linux networking basics (TCP/IP headers, Wireshark)', 'Python machine learning concepts'],
     learningOutcomes: ['Packet header decoding (IP, TCP, UDP flags)', 'Machine learning feature engineering for cybersecurity', 'Security Operations Center (SOC) visualization'],
@@ -925,6 +1262,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'NIDS Analysis Pipeline', subtitle: 'Raw Packets → Flow Aggregator → Trained Random Forest → Alert', type: 'architecture', accentColor: '#ec4899' },
       { title: 'SOC Cybersecurity Console', subtitle: 'Live Protocol Distribution, Threat Levels & Attacker IPs', type: 'dashboard', accentColor: '#10b981' },
       { title: 'Linux VM Deployment', subtitle: 'Hardened Ubuntu Server with Automated IPTables Blocking', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/network-intrusion-detection/overview.webp',
+      hardware: '/projects/network-intrusion-detection/hardware.webp',
+      architecture: '/projects/network-intrusion-detection/architecture.webp',
+      dashboard: '/projects/network-intrusion-detection/dashboard.webp',
+      deployment: '/projects/network-intrusion-detection/deployment.webp',
+      prototype: '/projects/network-intrusion-detection/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'What flow features are most effective for identifying a SYN flood attack?', answer: 'A high ratio of TCP SYN packets to ACK packets, high flow packet rate, and very short flow duration with minimal payload byte counts are classic signatures of SYN flooding.' }
@@ -961,6 +1319,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Software Project',
     technologies: ['React', 'Node.js', 'MySQL', 'AWS', 'Docker'],
     difficulty: 'Intermediate',
+    budget: '₹1,000–₹3,000',
     budgetDisplay: '₹1,000–₹3,000',
     budgetMin: 1000,
     budgetMax: 3000,
@@ -969,6 +1328,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['Standard Laptop / Computer'],
     software: ['React 18 / Next.js', 'Node.js & Express.js', 'MySQL 8.0', 'Docker', 'AWS EC2'],
     features: ['Role-Based Access Control (Admin, Faculty, Student roles)', 'Student enrollment, course registration, and semester marks entry', 'Automated GPA/CGPA calculation and printable PDF grade cards', 'Audit logs tracking student grade modifications by faculty'],
+    architecture: 'React Web UI → REST API Gateway → JWT Authentication → MySQL Database → AWS Cloud (Docker)',
     architectureSteps: ['React Web UI', 'REST API Gateway', 'JWT Authentication', 'MySQL Database', 'AWS Cloud (Docker)'],
     requirements: ['JavaScript/TypeScript proficiency', 'Relational database schema normalization'],
     learningOutcomes: ['Full-stack REST API development', 'JWT session security and authorization', 'Relational database transactions and indexing'],
@@ -980,6 +1340,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Relational Database Schema', subtitle: 'Normalized 3NF MySQL Tables with Foreign Key Constraints', type: 'hardware', accentColor: '#38bdf8' },
       { title: 'Student & Faculty Portal', subtitle: 'Responsive Dashboard with Course Management & GPA Calculator', type: 'dashboard', accentColor: '#10b981' },
       { title: 'AWS Cloud Hosting', subtitle: 'Dockerized Node.js & MySQL on AWS EC2 with Nginx Reverse Proxy', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/cloud-student-management/overview.webp',
+      hardware: '/projects/cloud-student-management/hardware.webp',
+      architecture: '/projects/cloud-student-management/architecture.webp',
+      dashboard: '/projects/cloud-student-management/dashboard.webp',
+      deployment: '/projects/cloud-student-management/deployment.webp',
+      prototype: '/projects/cloud-student-management/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'Why use JWT (JSON Web Tokens) instead of traditional server-side sessions?', answer: 'JWT is stateless and self-contained; the server verifies the cryptographic signature without querying session tables on every request, making it easily horizontally scalable across cloud instances.' }
@@ -1016,6 +1397,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Final Year Project',
     technologies: ['Docker', 'Jenkins', 'GitHub Actions', 'AWS', 'Nginx', 'SonarQube'],
     difficulty: 'Intermediate',
+    budget: '₹1,000–₹3,000',
     budgetDisplay: '₹1,000–₹3,000',
     budgetMin: 1000,
     budgetMax: 3000,
@@ -1029,6 +1411,7 @@ export const PROJECTS_DATA: Project[] = [
       'Multi-stage Docker builds creating minimal, secure container footprints',
       'Zero-downtime rolling deployments on AWS EC2 with Nginx reverse proxy'
     ],
+    architecture: 'Developer Git Push → GitHub Actions / Jenkins → Unit Tests & SonarQube → Docker Image Build → AWS ECR Container Registry → AWS EC2 Production Server',
     architectureSteps: ['Developer Git Push', 'GitHub Actions / Jenkins', 'Unit Tests & SonarQube', 'Docker Image Build', 'AWS ECR Container Registry', 'AWS EC2 Production Server'],
     requirements: ['Git command line proficiency', 'Basic Linux server and Docker concepts'],
     learningOutcomes: ['Cloud-native CI/CD automation pipelines', 'Containerization best practices and multi-stage builds', 'Production infrastructure monitoring and rolling deployments'],
@@ -1041,6 +1424,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Quality Gate Dashboard', subtitle: 'SonarQube Code Coverage, Bugs, and Vulnerability Report', type: 'dashboard', accentColor: '#10b981' },
       { title: 'Docker Multi-Stage Build', subtitle: 'Minimal Production Container Image Optimization', type: 'hardware', accentColor: '#38bdf8' },
       { title: 'AWS Cloud Production', subtitle: 'EC2 Instance Running Containerized Microservices behind Nginx', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/devops-cicd-web-application/overview.webp',
+      hardware: '/projects/devops-cicd-web-application/hardware.webp',
+      architecture: '/projects/devops-cicd-web-application/architecture.webp',
+      dashboard: '/projects/devops-cicd-web-application/dashboard.webp',
+      deployment: '/projects/devops-cicd-web-application/deployment.webp',
+      prototype: '/projects/devops-cicd-web-application/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'What is the purpose of a Multi-Stage Dockerfile in a production CI/CD pipeline?', answer: 'Multi-stage builds separate the build environment (compilers, npm build tools, devDependencies) from the final production runtime. Only the compiled production artifacts and runtime dependencies are copied to the final image, reducing image size by up to 80% and removing build-time attack surfaces.' },
@@ -1078,6 +1482,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Major Project',
     technologies: ['Node.js', 'MQTT', 'React', 'Grafana', 'InfluxDB'],
     difficulty: 'Advanced',
+    budget: '₹2,000–₹4,000',
     budgetDisplay: '₹2,000–₹4,000',
     budgetMin: 2000,
     budgetMax: 4000,
@@ -1086,6 +1491,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['ESP32 Telemetry Nodes (x2)', 'Sensors', 'Host Server / Cloud VM'],
     software: ['Eclipse Mosquitto MQTT', 'InfluxDB 2.x', 'Grafana Enterprise', 'Docker Compose'],
     features: ['Pub/Sub architecture decoupling sensor producers from data consumers', 'Sub-second real-time telemetry rendering across multiple dashboard gauges', 'Automated threshold alerts dispatched via Discord / Slack webhooks', 'Historical data aggregation and export to CSV for data analysis'],
+    architecture: 'IoT Field Nodes → Mosquitto MQTT Broker → InfluxDB Time-Series DB → Grafana Server → Engineer Web UI',
     architectureSteps: ['IoT Field Nodes', 'Mosquitto MQTT Broker', 'InfluxDB Time-Series DB', 'Grafana Server', 'Engineer Web UI'],
     requirements: ['MQTT protocol basics', 'Docker compose multi-container orchestration'],
     learningOutcomes: ['Time-series database modeling', 'Industrial telemetry visualization', 'Decoupled pub/sub message brokers'],
@@ -1097,6 +1503,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Time-Series Data Model', subtitle: 'Buckets, Tags, and Field Values for High-Frequency Sensors', type: 'hardware', accentColor: '#38bdf8' },
       { title: 'Grafana Live Dashboard', subtitle: 'Multi-Gauge Real-Time Environmental and Power Telemetry', type: 'dashboard', accentColor: '#10b981' },
       { title: 'Docker Compose Stack', subtitle: 'Containerized Mosquitto, InfluxDB, and Grafana on Cloud VM', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/realtime-iot-monitoring-dashboard/overview.webp',
+      hardware: '/projects/realtime-iot-monitoring-dashboard/hardware.webp',
+      architecture: '/projects/realtime-iot-monitoring-dashboard/architecture.webp',
+      dashboard: '/projects/realtime-iot-monitoring-dashboard/dashboard.webp',
+      deployment: '/projects/realtime-iot-monitoring-dashboard/deployment.webp',
+      prototype: '/projects/realtime-iot-monitoring-dashboard/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'What is Quality of Service (QoS) in MQTT and why does it matter for IoT?', answer: 'MQTT provides 3 QoS levels: QoS 0 (At most once, fire-and-forget), QoS 1 (At least once, guaranteed delivery with potential duplicates), and QoS 2 (Exactly once, 4-step handshake ensuring no loss or duplication). Telemetry typically uses QoS 0 or 1 depending on sensor criticality.' }
@@ -1133,6 +1560,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Software Project',
     technologies: ['Python', 'ML', 'React', 'Node.js', 'Scikit-Learn'],
     difficulty: 'Advanced',
+    budget: '₹1,000–₹3,000',
     budgetDisplay: '₹1,000–₹3,000',
     budgetMin: 1000,
     budgetMax: 3000,
@@ -1141,6 +1569,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['Standard Laptop / Computer'],
     software: ['Python 3.10', 'Scikit-Learn / Pandas', 'React.js Frontend', 'FastAPI / Express API'],
     features: ['Cosine similarity matching algorithm calculating percentage compatibility scores', 'Multi-parameter filtering by engineering branch, budget, and hardware platform', 'Dynamic ranking of alternative project recommendations', 'User preference bookmarking and customized bill of materials estimation'],
+    architecture: 'Student Profile Form → FastAPI ML Engine → Vector Feature Embeddings → Cosine Similarity Matcher → React Recommendations UI',
     architectureSteps: ['Student Profile Form', 'FastAPI ML Engine', 'Vector Feature Embeddings', 'Cosine Similarity Matcher', 'React Recommendations UI'],
     requirements: ['Python and machine learning basics', 'Vector similarity concepts'],
     learningOutcomes: ['Content-based recommendation algorithms', 'TF-IDF and feature vectorization', 'Full-stack AI model serving via REST APIs'],
@@ -1152,6 +1581,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Student Input Vector', subtitle: 'Multi-Dimensional Branch, Budget & Skill Parameter Matrix', type: 'hardware', accentColor: '#38bdf8' },
       { title: 'AI Matcher Dashboard', subtitle: 'Ranked Project Recommendations with Live Score Percentages', type: 'dashboard', accentColor: '#10b981' },
       { title: 'FastAPI Model Server', subtitle: 'Containerized Microservice Serving Sub-50ms Inference Responses', type: 'deployment', accentColor: '#818cf8' },
+    ],
+    gallery: {
+      overview: '/projects/ai-project-recommendation/overview.webp',
+      hardware: '/projects/ai-project-recommendation/hardware.webp',
+      architecture: '/projects/ai-project-recommendation/architecture.webp',
+      dashboard: '/projects/ai-project-recommendation/dashboard.webp',
+      deployment: '/projects/ai-project-recommendation/deployment.webp',
+      prototype: '/projects/ai-project-recommendation/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'How does Cosine Similarity evaluate project recommendations?', answer: 'Cosine similarity measures the cosine of the angle between two multi-dimensional vectors (the student skill vector and the project requirement vector) in inner product space. A value of 1 indicates identical alignment regardless of vector magnitude.' }
@@ -1188,6 +1638,7 @@ export const PROJECTS_DATA: Project[] = [
     projectType: 'Final Year Project',
     technologies: ['ESP32', 'Vibration Sensor', 'ML', 'AWS', 'Grafana'],
     difficulty: 'Advanced',
+    budget: '₹4,000–₹8,000',
     budgetDisplay: '₹4,000–₹8,000',
     budgetMin: 4000,
     budgetMax: 8000,
@@ -1196,6 +1647,7 @@ export const PROJECTS_DATA: Project[] = [
     hardware: ['ESP32 NodeMCU', 'ADXL345 3-Axis Digital Accelerometer', 'DS18B20 Industrial Waterproof Temperature Probe', 'Industrial Heavy-Duty Mounting Magnet', '5V Power Supply'],
     software: ['Arduino C++ (kissFFT Library)', 'Edge Impulse / TinyML', 'AWS IoT Core / DynamoDB', 'Grafana Dashboard'],
     features: ['High-frequency 3-axis vibration sampling up to 3200Hz', 'On-device Fast Fourier Transform (FFT) extracting dominant frequency peaks', 'Edge anomaly detection identifying bearing wear and motor unbalance', 'Cloud Grafana dashboard visualizing motor Health Index and trend predictions'],
+    architecture: 'ADXL345 Accelerometer → ESP32 Edge FFT & ML → MQTT Telemetry → AWS IoT Core → Grafana Motor Health Dashboard',
     architectureSteps: ['ADXL345 Accelerometer', 'ESP32 Edge FFT & ML', 'MQTT Telemetry', 'AWS IoT Core', 'Grafana Motor Health Dashboard'],
     requirements: ['Vibration analysis basics (frequency spectrum, harmonics)', 'I2C and SPI digital sensor interfacing'],
     learningOutcomes: ['Vibration frequency spectral analysis (FFT)', 'TinyML embedded machine learning on microcontrollers', 'Industry 4.0 predictive maintenance workflows'],
@@ -1207,6 +1659,27 @@ export const PROJECTS_DATA: Project[] = [
       { title: 'Edge FFT & Anomaly Pipeline', subtitle: 'Raw Acceleration → 128-point FFT Spectral Peaks → TinyML Anomaly Score', type: 'architecture', accentColor: '#38bdf8' },
       { title: 'Motor Health Dashboard', subtitle: 'Live RMS Velocity, Dominant Frequencies & Failure Warning', type: 'dashboard', accentColor: '#ec4899' },
       { title: 'Industrial Enclosure Unit', subtitle: 'IP65 Vibration-Isolated Enclosure with External Antenna', type: 'deployment', accentColor: '#10b981' },
+    ],
+    gallery: {
+      overview: '/projects/industrial-iot-predictive-maintenance/overview.webp',
+      hardware: '/projects/industrial-iot-predictive-maintenance/hardware.webp',
+      architecture: '/projects/industrial-iot-predictive-maintenance/architecture.webp',
+      dashboard: '/projects/industrial-iot-predictive-maintenance/dashboard.webp',
+      deployment: '/projects/industrial-iot-predictive-maintenance/deployment.webp',
+      prototype: '/projects/industrial-iot-predictive-maintenance/prototype.webp'
+    },
+    packageContents: [
+        "Full Commented Source Code (Firmware, APIs & Frontend UI)",
+        "Pin-to-Pin Circuit Schematics & Fritzing Breadboard Wiring",
+        "End-to-End System Architecture & Dataflow Sequence Diagrams",
+        "Relational Database Schema & Data Migration Files",
+        "Interactive REST & MQTT API Documentation",
+        "Hardware Component Bill of Materials & Datasheet Pack",
+        "Docker Container Configurations & AWS Cloud Deployment Guide",
+        "University-Standard IEEE Format Project Report (DOCX & LaTeX)",
+        "15-Minute Review Slide Deck Presentation (PPT)",
+        "External Examiner Viva Defense Question Bank with Verified Answers",
+        "Live Demonstration Walkthrough & Video Presentation Script"
     ],
     vivaQuestions: [
       { question: 'Why is Fast Fourier Transform (FFT) performed on motor vibration data?', answer: 'Raw time-domain vibration signals are a chaotic superposition of many frequencies. FFT decomposes the signal into discrete frequency components, isolating characteristic fault frequencies (e.g. 1x RPM for unbalance, 2x RPM for misalignment, and high-frequency harmonics for bearing raceway defects).' }
