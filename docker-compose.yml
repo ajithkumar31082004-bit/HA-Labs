@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  ha-labs-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ha-labs/platform:latest
+    container_name: ha_labs_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - ha-network
+
+networks:
+  ha-network:
+    driver: bridge
