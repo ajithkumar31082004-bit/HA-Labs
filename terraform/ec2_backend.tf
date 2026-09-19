@@ -1,10 +1,10 @@
 # ── EC2 #2: Backend Server + PostgreSQL Database (Private Subnet) ───────────
 resource "aws_instance" "backend" {
-  ami                  = data.aws_ami.ubuntu.id
+  ami                  = local.ami_id
   instance_type        = var.backend_instance_type
   subnet_id            = aws_subnet.private.id
   vpc_security_group_ids = [aws_security_group.backend.id]
-  key_name             = aws_key_pair.generated_key.key_name
+  key_name             = local.key_name
   iam_instance_profile = aws_iam_instance_profile.backend_profile.name
 
   # Root block device with GP3 encryption

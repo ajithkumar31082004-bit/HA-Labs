@@ -16,23 +16,33 @@ resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
 
-# Generate an RSA private key for EC2 SSH access
+# Optional: Generate an RSA private key for EC2 SSH access if create_key_pair is true
 resource "tls_private_key" "ec2_key" {
+  count     = var.create_key_pair ? 1 : 0
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-# Create AWS Key Pair from generated public key
+# Optional: Create AWS Key Pair from generated public key
 resource "aws_key_pair" "generated_key" {
+  count      = var.create_key_pair ? 1 : 0
   key_name   = "${var.project_name}-${var.environment}-key"
-  public_key = tls_private_key.ec2_key.public_key_openssh
+  public_key = tls_private_key.ec2_key[0].public_key_openssh
 }
 
-# Save the private key locally for convenience (.pem file)
+# Optional: Save the private key locally for convenience (.pem file)
 resource "local_file" "private_key_pem" {
-  content         = tls_private_key.ec2_key.private_key_pem
+  count           = var.create_key_pair ? 1 : 0
+  content         = tls_private_key.ec2_key[0].private_key_pem
   filename        = "${path.module}/${var.project_name}-${var.environment}.pem"
   file_permission = "0400"
+}
+
+# Local variables for dynamic key and AMI resolution
+locals {
+  key_name     = var.create_key_pair ? aws_key_pair.generated_key[0].key_name : var.key_name
+  key_pem_file = var.create_key_pair ? local_file.private_key_pem[0].filename : "${var.key_name}.pem"
+  ami_id       = var.custom_ami_id != "" ? var.custom_ami_id : data.aws_ami.ubuntu.id
 }
 
 # Store database password in AWS SSM Parameter Store (SecureString)

@@ -58,6 +58,24 @@ variable "backend_instance_type" {
   default     = "t3.medium"
 }
 
+variable "custom_ami_id" {
+  description = "Custom AMI ID for EC2 instances (default: Ubuntu LTS ami-01a00762f46d584a1 in ap-south-1)"
+  type        = string
+  default     = "ami-01a00762f46d584a1"
+}
+
+variable "key_name" {
+  description = "Name of existing AWS EC2 Key Pair to associate with instances (e.g. Brawl_Star for Brawl_Star.pem)"
+  type        = string
+  default     = "Brawl_Star"
+}
+
+variable "create_key_pair" {
+  description = "Whether to auto-generate a new RSA key pair via Terraform. Set to false when using an existing AWS Key Pair (e.g. Brawl_Star)"
+  type        = bool
+  default     = false
+}
+
 variable "allowed_ssh_cidr" {
   description = "IP CIDR allowed to connect to EC2 instances via SSH (set to your IP/32 for security)"
   type        = list(string)

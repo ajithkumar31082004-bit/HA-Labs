@@ -30,7 +30,7 @@ output "website_url" {
 
 output "ssh_frontend_command" {
   description = "Command to SSH into EC2 #1 Frontend Server"
-  value       = "ssh -i ${local_file.private_key_pem.filename} ubuntu@${aws_eip.frontend.public_ip}"
+  value       = "ssh -i ${local.key_pem_file} ubuntu@${aws_eip.frontend.public_ip}"
 }
 
 output "ssm_backend_session_command" {

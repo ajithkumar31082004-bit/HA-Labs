@@ -139,7 +139,7 @@ backend_private_ip          = "10.0.2.xxx"
 s3_deliverables_bucket      = "ha-labs-deliverables-prod-a8f7"
 s3_backups_bucket           = "ha-labs-db-backups-prod-a8f7"
 website_url                 = "http://halabs.in"
-ssh_frontend_command        = "ssh -i ha-labs-prod.pem ubuntu@13.235.xxx.xxx"
+ssh_frontend_command        = "ssh -i Brawl_Star.pem ubuntu@13.235.xxx.xxx"
 ssm_backend_session_command = "aws ssm start-session --target i-0abcd1234efgh5678 --region ap-south-1"
 ```
 
@@ -148,9 +148,9 @@ ssm_backend_session_command = "aws ssm start-session --target i-0abcd1234efgh567
 ## 🛠️ Management & Operations
 
 ### Connecting to EC2 #1 (Frontend)
-Using the generated private key:
+Using your `Brawl_Star.pem` key pair:
 ```bash
-ssh -i ha-labs-prod.pem ubuntu@<frontend_public_ip>
+ssh -i Brawl_Star.pem ubuntu@<frontend_public_ip>
 ```
 
 ### Connecting to EC2 #2 (Backend) via AWS Systems Manager (Recommended)

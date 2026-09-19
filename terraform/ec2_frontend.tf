@@ -1,10 +1,10 @@
 # ── EC2 #1: Frontend Server (Public Subnet) ─────────────────────────────────
 resource "aws_instance" "frontend" {
-  ami                  = data.aws_ami.ubuntu.id
+  ami                  = local.ami_id
   instance_type        = var.frontend_instance_type
   subnet_id            = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.frontend.id]
-  key_name             = aws_key_pair.generated_key.key_name
+  key_name             = local.key_name
   iam_instance_profile = aws_iam_instance_profile.frontend_profile.name
 
   # Root block device with GP3 encryption
