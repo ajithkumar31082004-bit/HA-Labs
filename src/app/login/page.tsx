@@ -7,7 +7,7 @@ import { Logo } from '@/components/Logo';
 import { useProjectStore, SEED_USERS } from '@/context/ProjectStoreContext';
 import { Lock, Mail, ArrowRight, ShieldCheck, UserCheck, Sparkles, Key, CheckCircle2, Hammer } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || '/account';
@@ -159,5 +159,13 @@ export default function LoginPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-emerald-400">Loading Login...</div>}>
+      <LoginContent />
+    </React.Suspense>
   );
 }

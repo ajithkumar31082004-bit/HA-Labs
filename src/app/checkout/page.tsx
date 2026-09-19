@@ -24,7 +24,7 @@ import {
   FileText
 } from 'lucide-react';
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectIdParam = searchParams.get('projectId') || searchParams.get('id') || 'proj-ece-1';
@@ -434,5 +434,13 @@ export default function CheckoutPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-emerald-400">Loading Checkout...</div>}>
+      <CheckoutContent />
+    </React.Suspense>
   );
 }

@@ -21,7 +21,7 @@ import {
   ArrowUpDown
 } from 'lucide-react';
 
-export default function ProjectsCatalogPage() {
+function ProjectsCatalogContent() {
   const searchParams = useSearchParams();
   const initialDept = searchParams.get('department') || 'All';
   const initialFilter = searchParams.get('filter') || 'all';
@@ -238,5 +238,13 @@ export default function ProjectsCatalogPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function ProjectsCatalogPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-emerald-400">Loading Engineering Projects...</div>}>
+      <ProjectsCatalogContent />
+    </React.Suspense>
   );
 }

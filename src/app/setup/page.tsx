@@ -19,7 +19,7 @@ import {
   BookOpen
 } from 'lucide-react';
 
-export default function ProjectSetupPage() {
+function ProjectSetupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectSlug = searchParams.get('project');
@@ -267,5 +267,13 @@ export default function ProjectSetupPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function ProjectSetupPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-emerald-400">Loading Project Setup...</div>}>
+      <ProjectSetupContent />
+    </React.Suspense>
   );
 }
