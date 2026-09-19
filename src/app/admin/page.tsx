@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { PROJECTS_DATA, Project } from '@/data/projects';
 import { DEPARTMENTS } from '@/components/Navbar';
+import { useProjectStore, BuilderProjectItem } from '@/context/ProjectStoreContext';
 import {
   FolderGit2,
   Layers,
@@ -25,35 +26,81 @@ import {
   AlertCircle,
   ShieldCheck,
   Trash2,
-  Edit
+  Edit,
+  XCircle,
+  HelpCircle,
+  ExternalLink,
+  ClipboardCheck,
+  Filter
 } from 'lucide-react';
 
 type AdminTab =
   | 'analytics'
+  | 'submissions'
   | 'projects'
   | 'departments'
   | 'students'
-  | 'teams'
+  | 'orders'
   | 'technologies'
   | 'resources'
-  | 'submissions'
-  | 'reviews'
-  | 'reports'
   | 'settings';
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<AdminTab>('analytics');
+  const { builderProjects, reviewProject, orders } = useProjectStore();
+  const [activeTab, setActiveTab] = useState<AdminTab>('submissions');
   const [projectsList, setProjectsList] = useState<Project[]>(PROJECTS_DATA);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newBranch, setNewBranch] = useState('ECE');
   const [newDifficulty, setNewDifficulty] = useState<'Beginner' | 'Intermediate' | 'Advanced'>('Intermediate');
 
+  // Verification modal state
+  const [selectedReviewProject, setSelectedReviewProject] = useState<BuilderProjectItem | null>(null);
+  const [reviewNotes, setReviewNotes] = useState('');
+  const [checklist, setChecklist] = useState({
+    hardwareTest: true,
+    docsComplete: true,
+    codeMatch: true,
+    mediaGenuine: true,
+    securityCheck: true,
+    licensing: true,
+    deliverablesBundle: true,
+    vivaReadiness: true,
+  });
+
+  const handleCheckbox = (key: keyof typeof checklist) => {
+    setChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const openReviewModal = (proj: BuilderProjectItem) => {
+    setSelectedReviewProject(proj);
+    setReviewNotes('');
+    setChecklist({
+      hardwareTest: true,
+      docsComplete: true,
+      codeMatch: true,
+      mediaGenuine: true,
+      securityCheck: true,
+      licensing: true,
+      deliverablesBundle: true,
+      vivaReadiness: true,
+    });
+  };
+
+  const executeReview = (decision: 'approve' | 'request_changes' | 'reject') => {
+    if (!selectedReviewProject) return;
+    reviewProject(selectedReviewProject.id, decision, reviewNotes);
+    setSelectedReviewProject(null);
+  };
+
+  const allChecklistPassed = Object.values(checklist).every(Boolean);
+
   const analytics = {
-    totalProjects: 142,
+    totalProjects: 142 + builderProjects.filter(p => p.status === 'published').length,
     activeStudents: '3,840',
     teamsCreated: 920,
     projectsCompleted: 615,
+    totalSales: orders.reduce((sum, o) => sum + o.amount, 0) + 128450,
   };
 
   const popularDepartments = [
@@ -73,24 +120,17 @@ export default function AdminDashboardPage() {
     { name: 'ROS / Robotics Firmware', usage: '28%', count: 40 },
   ];
 
-  const submissions = [
-    { id: 'SUB-840', project: 'Smart IoT Agriculture Monitoring', team: 'AgriTech Builders', dept: 'ECE', submitted: '10 mins ago', status: 'Pending Review' },
-    { id: 'SUB-839', project: 'Autonomous Mobile Robot with SLAM', team: 'RoboKnights', dept: 'ECE/MECH', submitted: '2 hours ago', status: 'Approved' },
-    { id: 'SUB-838', project: 'EV Battery Management with CAN Bus', team: 'ElectroCharge', dept: 'EEE', submitted: '5 hours ago', status: 'Approved' },
-    { id: 'SUB-837', project: 'Real-Time Edge AI Defect Detection', team: 'VisionCraft', dept: 'AI & DS', submitted: '1 day ago', status: 'Approved' },
-  ];
+  const pendingSubmissionsCount = builderProjects.filter((p) => p.status === 'pending').length;
 
   const sidebarTabs = [
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'projects', label: 'Projects', icon: FolderGit2, badge: projectsList.length },
+    { id: 'submissions', label: 'Project Verification', icon: ClipboardCheck, badge: pendingSubmissionsCount },
+    { id: 'analytics', label: 'Analytics & Sales', icon: BarChart3 },
+    { id: 'projects', label: 'Projects Inventory', icon: FolderGit2, badge: projectsList.length },
+    { id: 'orders', label: 'Buyer Orders', icon: FileCheck, badge: orders.length },
     { id: 'departments', label: 'Departments', icon: Layers, badge: 8 },
-    { id: 'students', label: 'Students', icon: Users, badge: '3.8k' },
-    { id: 'teams', label: 'Teams', icon: Users, badge: 920 },
+    { id: 'students', label: 'Students & Teams', icon: Users, badge: '3.8k' },
     { id: 'technologies', label: 'Technologies', icon: Cpu, badge: 24 },
-    { id: 'resources', label: 'Resources', icon: BookOpen },
-    { id: 'submissions', label: 'Submissions', icon: FileCheck, badge: 4 },
-    { id: 'reviews', label: 'Reviews', icon: Star },
-    { id: 'reports', label: 'Reports', icon: FileText },
+    { id: 'resources', label: 'Resources & BOM', icon: BookOpen },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -158,24 +198,31 @@ export default function AdminDashboardPage() {
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#087443] animate-pulse" />
               <span className="text-xs font-mono font-bold text-[#087443] uppercase tracking-wider">
-                Platform Administration
+                Platform Administration & Technical Verification
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-[#17211B] mt-1 tracking-tight">
-              HA Labs Admin Dashboard
+              HA Labs Admin Console
             </h1>
             <p className="text-xs sm:text-sm text-[#647067] mt-0.5">
-              Manage academic engineering projects, branch departments, student teams, and reviews.
+              Review student & builder project submissions, execute 8-point technical bench checks, and manage platform orders.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              href="/builder"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-[#E2E8E4] hover:border-[#087443] text-xs font-bold text-[#17211B] transition-all"
+            >
+              <span>Go to Builder Studio</span>
+              <ExternalLink className="w-3.5 h-3.5 text-[#087443]" />
+            </Link>
             <button
               onClick={() => setAddModalOpen(true)}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#087443] hover:bg-[#065331] text-white font-bold text-xs shadow-xs transition-all"
             >
               <Plus className="w-4 h-4 text-[#84CC16]" />
-              <span>Add New Project</span>
+              <span>Add Catalog Project</span>
             </button>
           </div>
         </div>
@@ -184,7 +231,7 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* ── LEFT SIDEBAR ──────────────────────────────────────────────────────── */}
-          <div className="lg:col-span-3 space-y-2">
+          <div className="lg:col-span-3 space-y-3">
             <div className="ha-card p-3 rounded-2xl bg-white border border-[#E2E8E4] space-y-1">
               {sidebarTabs.map((tab) => {
                 const Icon = tab.icon;
@@ -208,6 +255,8 @@ export default function AdminDashboardPage() {
                         className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
                           isActive
                             ? 'bg-white/20 text-white'
+                            : tab.id === 'submissions' && pendingSubmissionsCount > 0
+                            ? 'bg-amber-100 text-amber-900 font-black'
                             : 'bg-[#F1F5F3] text-[#087443] font-bold'
                         }`}
                       >
@@ -223,11 +272,15 @@ export default function AdminDashboardPage() {
             <div className="p-4 rounded-2xl bg-white border border-[#E2E8E4] space-y-2 text-xs">
               <span className="font-bold text-[#087443] flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Verification Engine Online</span>
+                <span>Verification Engine Active</span>
               </span>
               <p className="text-[#647067] text-[11px] leading-relaxed">
-                All 142 project circuits and firmware compile passes are currently green.
+                All uploaded firmware builds are sandboxed and scanned for hardware pin conflicts.
               </p>
+              <div className="pt-2 border-t border-[#E2E8E4] flex items-center justify-between text-[11px]">
+                <span className="text-[#647067]">Platform Commission:</span>
+                <span className="font-mono font-bold text-[#087443]">15% Platform / 85% Builder</span>
+              </div>
             </div>
           </div>
 
@@ -237,34 +290,126 @@ export default function AdminDashboardPage() {
             {/* OVERVIEW ANALYTICS KPIS */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="ha-card p-5 rounded-2xl bg-white border border-[#E2E8E4]">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#647067] block">Total Projects</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#647067] block">Pending Reviews</span>
+                <div className="text-3xl font-black text-amber-600 font-mono mt-1">{pendingSubmissionsCount}</div>
+                <span className="text-[11px] text-amber-700 font-medium">Requires technical check</span>
+              </div>
+              <div className="ha-card p-5 rounded-2xl bg-white border border-[#E2E8E4]">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#647067] block">Live Catalog</span>
                 <div className="text-3xl font-black text-[#087443] font-mono mt-1">{analytics.totalProjects}</div>
                 <span className="text-[11px] text-[#16A34A] font-medium">+14 this semester</span>
               </div>
               <div className="ha-card p-5 rounded-2xl bg-white border border-[#E2E8E4]">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#647067] block">Active Students</span>
-                <div className="text-3xl font-black text-[#17211B] font-mono mt-1">{analytics.activeStudents}</div>
-                <span className="text-[11px] text-[#16A34A] font-medium">+320 this month</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#647067] block">Total Orders</span>
+                <div className="text-3xl font-black text-[#17211B] font-mono mt-1">{orders.length + 38}</div>
+                <span className="text-[11px] text-[#087443] font-medium">₹{analytics.totalSales.toLocaleString()} Vol</span>
               </div>
               <div className="ha-card p-5 rounded-2xl bg-white border border-[#E2E8E4]">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#647067] block">Teams Created</span>
-                <div className="text-3xl font-black text-[#087443] font-mono mt-1">{analytics.teamsCreated}</div>
-                <span className="text-[11px] text-[#647067] font-medium">Avg 3.2 students/team</span>
-              </div>
-              <div className="ha-card p-5 rounded-2xl bg-white border border-[#E2E8E4]">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#647067] block">Projects Completed</span>
-                <div className="text-3xl font-black text-[#16A34A] font-mono mt-1">{analytics.projectsCompleted}</div>
-                <span className="text-[11px] text-[#087443] font-bold">98.4% Viva Pass</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#647067] block">Viva Pass Rate</span>
+                <div className="text-3xl font-black text-[#16A34A] font-mono mt-1">98.4%</div>
+                <span className="text-[11px] text-[#087443] font-bold">University verified</span>
               </div>
             </div>
 
-            {/* ANALYTICS SECTION: CHARTS & DISTRIBUTIONS */}
+            {/* ── 1. SUBMISSIONS & VERIFICATION QUEUE TAB ──────────────────────────────── */}
+            {activeTab === 'submissions' && (
+              <div className="space-y-6">
+                <div className="ha-card rounded-2xl bg-white border border-[#E2E8E4] p-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E8E4] pb-4">
+                    <div>
+                      <h3 className="text-base font-bold text-[#17211B] flex items-center gap-2">
+                        <ClipboardCheck className="w-5 h-5 text-[#087443]" />
+                        <span>Project Technical Verification Queue</span>
+                      </h3>
+                      <p className="text-xs text-[#647067] mt-0.5">
+                        Projects submitted by engineering builders. Admins must execute the 8-point checklist before releasing to the public catalog.
+                      </p>
+                    </div>
+                    <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-mono font-bold self-start">
+                      {pendingSubmissionsCount} Pending Action
+                    </span>
+                  </div>
+
+                  {builderProjects.length === 0 ? (
+                    <div className="text-center py-12 text-[#647067] text-xs">
+                      No builder submissions in queue.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="border-b border-[#E2E8E4] text-[#647067] uppercase font-bold">
+                          <tr>
+                            <th className="pb-3">Project Title</th>
+                            <th className="pb-3">Dept</th>
+                            <th className="pb-3">Difficulty</th>
+                            <th className="pb-3">Price</th>
+                            <th className="pb-3">Submitted</th>
+                            <th className="pb-3">Status</th>
+                            <th className="pb-3 text-right">Verification</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#E2E8E4]">
+                          {builderProjects.map((proj) => (
+                            <tr key={proj.id} className="hover:bg-[#F8FAF9] transition-colors">
+                              <td className="py-3.5 pr-2">
+                                <div className="font-bold text-[#17211B]">{proj.title}</div>
+                                <div className="text-[11px] font-mono text-[#647067]">ID: {proj.id}</div>
+                              </td>
+                              <td className="py-3.5 font-mono">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-[#087443] border border-emerald-200">
+                                  {proj.department}
+                                </span>
+                              </td>
+                              <td className="py-3.5 text-[#647067] font-medium">{proj.difficulty}</td>
+                              <td className="py-3.5 font-mono font-bold text-[#17211B]">₹{proj.price.toLocaleString()}</td>
+                              <td className="py-3.5 text-[#647067]">{proj.submittedAt}</td>
+                              <td className="py-3.5">
+                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                  proj.status === 'published'
+                                    ? 'bg-emerald-50 text-[#087443] border border-emerald-200'
+                                    : proj.status === 'pending'
+                                    ? 'bg-amber-50 text-amber-800 border border-amber-200 animate-pulse'
+                                    : proj.status === 'rejected'
+                                    ? 'bg-red-50 text-red-700 border border-red-200'
+                                    : 'bg-slate-100 text-slate-700'
+                                }`}>
+                                  {proj.status}
+                                </span>
+                              </td>
+                              <td className="py-3.5 text-right">
+                                <button
+                                  onClick={() => openReviewModal(proj)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#087443] hover:bg-[#065331] text-white font-bold text-xs shadow-xs transition-all"
+                                >
+                                  <ShieldCheck className="w-3.5 h-3.5 text-[#84CC16]" />
+                                  <span>Review & Verify</span>
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {/* Verification Criteria Info Box */}
+                <div className="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-2 text-xs">
+                  <h4 className="font-bold text-[#087443] flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-[#087443]" />
+                    <span>HA Labs Quality Standard for Verified Engineering Projects</span>
+                  </h4>
+                  <p className="text-[#17211B] leading-relaxed">
+                    Only projects that meet the strict 8-point criteria are published to students. This ensures zero compilation errors during lab defense, genuine BOM pin mappings, original CAD/Fritzing circuit layouts, and fully formatted IEEE project reports.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* ── 2. ANALYTICS TAB ─────────────────────────────────────────────────── */}
             {activeTab === 'analytics' && (
               <div className="space-y-6">
-                
-                {/* 2 Column breakdown: Most Popular Departments & Most Used Tech */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
                   {/* Most Popular Departments */}
                   <div className="ha-card p-6 rounded-2xl bg-white border border-[#E2E8E4] space-y-4">
                     <div className="flex items-center justify-between">
@@ -314,124 +459,38 @@ export default function AdminDashboardPage() {
                       ))}
                     </div>
                   </div>
-
                 </div>
 
-                {/* Project Difficulty Distribution & Monthly Activity */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
-                  {/* Difficulty Distribution */}
-                  <div className="ha-card p-6 rounded-2xl bg-white border border-[#E2E8E4] space-y-4">
-                    <h3 className="text-base font-bold text-[#17211B]">Project Difficulty Distribution</h3>
-                    
-                    <div className="grid grid-cols-3 gap-3 text-center">
-                      <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200">
-                        <span className="text-[11px] font-bold text-[#087443] uppercase block">Beginner</span>
-                        <div className="text-2xl font-black text-[#087443] font-mono mt-1">35%</div>
-                        <span className="text-[10px] text-[#647067]">50 Projects</span>
-                      </div>
-                      <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200">
-                        <span className="text-[11px] font-bold text-blue-700 uppercase block">Intermediate</span>
-                        <div className="text-2xl font-black text-blue-800 font-mono mt-1">45%</div>
-                        <span className="text-[10px] text-[#647067]">64 Projects</span>
-                      </div>
-                      <div className="p-3.5 rounded-xl bg-purple-50 border border-purple-200">
-                        <span className="text-[11px] font-bold text-purple-700 uppercase block">Advanced</span>
-                        <div className="text-2xl font-black text-purple-800 font-mono mt-1">20%</div>
-                        <span className="text-[10px] text-[#647067]">28 Projects</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-[#647067] leading-relaxed">
-                      Intermediate projects are preferred for final-year capstone submissions by 7th & 8th semester teams.
-                    </p>
-                  </div>
-
-                  {/* Monthly Platform Activity */}
-                  <div className="ha-card p-6 rounded-2xl bg-white border border-[#E2E8E4] space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-base font-bold text-[#17211B]">Monthly Platform Activity</h3>
-                      <span className="text-xs font-mono text-[#087443] font-bold">2026 Academic Year</span>
-                    </div>
-
-                    <div className="flex items-end justify-between h-36 pt-4 gap-2">
-                      {[
-                        { month: 'Jun', value: 45 },
-                        { month: 'Jul', value: 65 },
-                        { month: 'Aug', value: 88 },
-                        { month: 'Sep', value: 115 },
-                        { month: 'Oct', value: 140 },
-                        { month: 'Nov', value: 95 },
-                      ].map((bar) => (
-                        <div key={bar.month} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
-                          <div
-                            className="w-full rounded-t-lg bg-gradient-to-t from-[#087443] to-[#16A34A] hover:opacity-90 transition-opacity"
-                            style={{ height: `${(bar.value / 140) * 100}%` }}
-                          />
-                          <span className="text-[11px] font-mono text-[#647067]">{bar.month}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Recent Submissions Queue */}
-                <div className="ha-card rounded-2xl bg-white border border-[#E2E8E4] p-6 space-y-4">
+                {/* Monthly Platform Activity */}
+                <div className="ha-card p-6 rounded-2xl bg-white border border-[#E2E8E4] space-y-4">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-base font-bold text-[#17211B]">Student Project Submissions Queue</h3>
-                      <p className="text-xs text-[#647067] mt-0.5">Projects submitted by student teams awaiting mentor approval.</p>
-                    </div>
-                    <span className="text-xs font-mono text-[#087443] font-bold">4 Pending</span>
+                    <h3 className="text-base font-bold text-[#17211B]">Monthly Platform Activity</h3>
+                    <span className="text-xs font-mono text-[#087443] font-bold">2026 Academic Year</span>
                   </div>
 
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="border-b border-[#E2E8E4] text-[#647067] uppercase font-bold">
-                        <tr>
-                          <th className="pb-2.5">ID</th>
-                          <th className="pb-2.5">Project Title</th>
-                          <th className="pb-2.5">Team</th>
-                          <th className="pb-2.5">Dept</th>
-                          <th className="pb-2.5">Submitted</th>
-                          <th className="pb-2.5">Status</th>
-                          <th className="pb-2.5 text-right">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#E2E8E4]">
-                        {submissions.map((sub) => (
-                          <tr key={sub.id} className="hover:bg-[#F8FAF9]">
-                            <td className="py-3 font-mono font-bold text-[#087443]">{sub.id}</td>
-                            <td className="py-3 font-semibold text-[#17211B]">{sub.project}</td>
-                            <td className="py-3 text-[#647067]">{sub.team}</td>
-                            <td className="py-3 font-mono">{sub.dept}</td>
-                            <td className="py-3 text-[#647067]">{sub.submitted}</td>
-                            <td className="py-3">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                sub.status === 'Pending Review'
-                                  ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                                  : 'bg-emerald-50 text-[#087443] border border-emerald-200'
-                              }`}>
-                                {sub.status}
-                              </span>
-                            </td>
-                            <td className="py-3 text-right">
-                              <button className="text-xs font-bold text-[#087443] hover:underline">
-                                Review
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="flex items-end justify-between h-36 pt-4 gap-2">
+                    {[
+                      { month: 'Jun', value: 45 },
+                      { month: 'Jul', value: 65 },
+                      { month: 'Aug', value: 88 },
+                      { month: 'Sep', value: 115 },
+                      { month: 'Oct', value: 140 },
+                      { month: 'Nov', value: 95 },
+                    ].map((bar) => (
+                      <div key={bar.month} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                        <div
+                          className="w-full rounded-t-lg bg-gradient-to-t from-[#087443] to-[#16A34A] hover:opacity-90 transition-opacity"
+                          style={{ height: `${(bar.value / 140) * 100}%` }}
+                        />
+                        <span className="text-[11px] font-mono text-[#647067]">{bar.month}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-
               </div>
             )}
 
-            {/* PROJECTS MANAGEMENT TAB */}
+            {/* ── 3. PROJECTS CATALOG TAB ─────────────────────────────────────────── */}
             {activeTab === 'projects' && (
               <div className="ha-card rounded-2xl bg-white border border-[#E2E8E4] p-6 space-y-4">
                 <div className="flex items-center justify-between">
@@ -478,7 +537,50 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            {/* DEPARTMENTS TAB */}
+            {/* ── 4. BUYER ORDERS TAB ─────────────────────────────────────────────── */}
+            {activeTab === 'orders' && (
+              <div className="ha-card rounded-2xl bg-white border border-[#E2E8E4] p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-[#17211B]">Student Buyer Orders & Payments</h3>
+                  <span className="text-xs font-mono text-[#087443] font-bold">{orders.length} Verified Orders</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="border-b border-[#E2E8E4] text-[#647067] uppercase font-bold">
+                      <tr>
+                        <th className="pb-3">Order ID</th>
+                        <th className="pb-3">Project Title</th>
+                        <th className="pb-3">Amount</th>
+                        <th className="pb-3">Date</th>
+                        <th className="pb-3">Status</th>
+                        <th className="pb-3">Add-on Services</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E2E8E4]">
+                      {orders.map((o) => (
+                        <tr key={o.id} className="hover:bg-[#F8FAF9]">
+                          <td className="py-3 font-mono font-bold text-[#087443]">{o.id}</td>
+                          <td className="py-3 font-bold text-[#17211B]">{o.projectTitle}</td>
+                          <td className="py-3 font-mono font-bold text-[#17211B]">₹{o.amount.toLocaleString()}</td>
+                          <td className="py-3 text-[#647067]">{o.date}</td>
+                          <td className="py-3">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-[#087443] border border-emerald-200">
+                              {o.status}
+                            </span>
+                          </td>
+                          <td className="py-3 text-[#647067]">
+                            {o.addons && o.addons.length > 0 ? o.addons.join(', ') : 'Base Deliverables'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── 5. DEPARTMENTS TAB ──────────────────────────────────────────────── */}
             {activeTab === 'departments' && (
               <div className="ha-card rounded-2xl bg-white border border-[#E2E8E4] p-6 space-y-4">
                 <h3 className="text-base font-bold text-[#17211B]">Engineering Departments</h3>
@@ -501,14 +603,14 @@ export default function AdminDashboardPage() {
             )}
 
             {/* OTHER TABS FALLBACK */}
-            {activeTab !== 'analytics' && activeTab !== 'projects' && activeTab !== 'departments' && (
+            {activeTab !== 'submissions' && activeTab !== 'analytics' && activeTab !== 'projects' && activeTab !== 'orders' && activeTab !== 'departments' && (
               <div className="ha-card rounded-2xl bg-white border border-[#E2E8E4] p-8 text-center space-y-3">
                 <div className="w-12 h-12 rounded-full bg-[#087443]/10 text-[#087443] flex items-center justify-center mx-auto">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-bold text-[#17211B] capitalize">{activeTab} Management</h3>
                 <p className="text-xs text-[#647067] max-w-md mx-auto">
-                  Module configured for university partner admins and senior lab mentors.
+                  Administrative control module for academic mentors and HA Labs system operators.
                 </p>
               </div>
             )}
@@ -518,6 +620,208 @@ export default function AdminDashboardPage() {
         </div>
 
       </div>
+
+      {/* ── 8-POINT TECHNICAL VERIFICATION MODAL ────────────────────────────────────── */}
+      {selectedReviewProject && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl border border-[#E2E8E4] max-w-2xl w-full p-6 space-y-5 shadow-2xl animate-fade-slide-up my-8 max-h-[90vh] overflow-y-auto">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-[#E2E8E4] pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                    PENDING VERIFICATION
+                  </span>
+                  <span className="text-xs font-mono text-[#647067]">ID: {selectedReviewProject.id}</span>
+                </div>
+                <h3 className="text-lg font-black text-[#17211B] mt-1">
+                  {selectedReviewProject.title}
+                </h3>
+                <div className="flex items-center gap-4 text-xs text-[#647067] mt-1">
+                  <span>Dept: <strong>{selectedReviewProject.department}</strong></span>
+                  <span>Difficulty: <strong>{selectedReviewProject.difficulty}</strong></span>
+                  <span>Base Price: <strong>₹{selectedReviewProject.price.toLocaleString()}</strong></span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelectedReviewProject(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-[#17211B] hover:bg-slate-100"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 8-Point Verification Checklist */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[#17211B] flex items-center gap-1.5">
+                  <ClipboardCheck className="w-4 h-4 text-[#087443]" />
+                  <span>8-Point Technical Verification Checklist</span>
+                </h4>
+                <span className={`text-[11px] font-bold ${allChecklistPassed ? 'text-[#087443]' : 'text-amber-700'}`}>
+                  {Object.values(checklist).filter(Boolean).length} / 8 Passed
+                </span>
+              </div>
+
+              <div className="space-y-2 bg-[#F8FAF9] p-4 rounded-xl border border-[#E2E8E4] text-xs">
+                
+                <label className="flex items-start gap-3 cursor-pointer p-1.5 rounded hover:bg-white transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={checklist.hardwareTest}
+                    onChange={() => handleCheckbox('hardwareTest')}
+                    className="mt-0.5 rounded border-[#E2E8E4] text-[#087443] focus:ring-[#087443]"
+                  />
+                  <div>
+                    <strong className="text-[#17211B]">1. Working Prototype Bench Test Passed</strong>
+                    <p className="text-[#647067] text-[11px]">Signal waveforms, voltage rail limits (3.3V/5V), and sensor communication bus verified.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer p-1.5 rounded hover:bg-white transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={checklist.docsComplete}
+                    onChange={() => handleCheckbox('docsComplete')}
+                    className="mt-0.5 rounded border-[#E2E8E4] text-[#087443] focus:ring-[#087443]"
+                  />
+                  <div>
+                    <strong className="text-[#17211B]">2. Documentation & IEEE Report Complete</strong>
+                    <p className="text-[#647067] text-[11px]">Abstract, methodology, block diagram, pin configuration table, and references included.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer p-1.5 rounded hover:bg-white transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={checklist.codeMatch}
+                    onChange={() => handleCheckbox('codeMatch')}
+                    className="mt-0.5 rounded border-[#E2E8E4] text-[#087443] focus:ring-[#087443]"
+                  />
+                  <div>
+                    <strong className="text-[#17211B]">3. Firmware & Software Builds Cleanly</strong>
+                    <p className="text-[#647067] text-[11px]">PlatformIO / Arduino IDE / Python requirements.txt install and compile with 0 fatal errors.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer p-1.5 rounded hover:bg-white transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={checklist.mediaGenuine}
+                    onChange={() => handleCheckbox('mediaGenuine')}
+                    className="mt-0.5 rounded border-[#E2E8E4] text-[#087443] focus:ring-[#087443]"
+                  />
+                  <div>
+                    <strong className="text-[#17211B]">4. Genuine Bench Media & Prototype Video</strong>
+                    <p className="text-[#647067] text-[11px]">Demonstration video confirms actual physical hardware operating in real-time.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer p-1.5 rounded hover:bg-white transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={checklist.securityCheck}
+                    onChange={() => handleCheckbox('securityCheck')}
+                    className="mt-0.5 rounded border-[#E2E8E4] text-[#087443] focus:ring-[#087443]"
+                  />
+                  <div>
+                    <strong className="text-[#17211B]">5. Security & Safety Compliance</strong>
+                    <p className="text-[#647067] text-[11px]">No hardcoded confidential credentials; high voltage isolation relays properly placed.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer p-1.5 rounded hover:bg-white transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={checklist.licensing}
+                    onChange={() => handleCheckbox('licensing')}
+                    className="mt-0.5 rounded border-[#E2E8E4] text-[#087443] focus:ring-[#087443]"
+                  />
+                  <div>
+                    <strong className="text-[#17211B]">6. Open-Source Licensing & Attribution</strong>
+                    <p className="text-[#647067] text-[11px]">MIT / Apache 2.0 / CERN-OHL licenses credited without IP infringement.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer p-1.5 rounded hover:bg-white transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={checklist.deliverablesBundle}
+                    onChange={() => handleCheckbox('deliverablesBundle')}
+                    className="mt-0.5 rounded border-[#E2E8E4] text-[#087443] focus:ring-[#087443]"
+                  />
+                  <div>
+                    <strong className="text-[#17211B]">7. Complete Deliverables Bundle Included</strong>
+                    <p className="text-[#647067] text-[11px]">Source ZIP, KiCad schematic, SQL schema, DOCX report, PPT presentation deck.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer p-1.5 rounded hover:bg-white transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={checklist.vivaReadiness}
+                    onChange={() => handleCheckbox('vivaReadiness')}
+                    className="mt-0.5 rounded border-[#E2E8E4] text-[#087443] focus:ring-[#087443]"
+                  />
+                  <div>
+                    <strong className="text-[#17211B]">8. Student Viva Defense Questions Validated</strong>
+                    <p className="text-[#647067] text-[11px]">At least 10 high-yield examiner viva questions with comprehensive academic answers.</p>
+                  </div>
+                </label>
+
+              </div>
+            </div>
+
+            {/* Admin Review Notes Input */}
+            <div className="space-y-1 text-xs">
+              <label className="font-bold text-[#17211B]">Admin Review Feedback / Instructions to Builder</label>
+              <textarea
+                value={reviewNotes}
+                onChange={(e) => setReviewNotes(e.target.value)}
+                placeholder="e.g. Schematics verified on bench test. Component BOM values match KiCad netlist. Approved for platform publication."
+                className="w-full h-20 p-3 rounded-xl border border-[#E2E8E4] focus:border-[#087443] outline-none text-xs"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-[#E2E8E4]">
+              <button
+                type="button"
+                onClick={() => executeReview('reject')}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-red-200 text-red-700 hover:bg-red-50 text-xs font-bold transition-all"
+              >
+                Reject Project
+              </button>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => executeReview('request_changes')}
+                  className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 text-xs font-bold transition-all"
+                >
+                  Request Changes
+                </button>
+                <button
+                  type="button"
+                  disabled={!allChecklistPassed}
+                  onClick={() => executeReview('approve')}
+                  className={`flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 ${
+                    allChecklistPassed
+                      ? 'bg-[#087443] hover:bg-[#065331]'
+                      : 'bg-slate-300 cursor-not-allowed'
+                  }`}
+                >
+                  <ShieldCheck className="w-4 h-4 text-[#84CC16]" />
+                  <span>Approve & Publish Project</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* ADD NEW PROJECT MODAL */}
       {addModalOpen && (

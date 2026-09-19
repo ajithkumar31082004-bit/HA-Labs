@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { PROJECTS_DATA, Project } from '@/data/projects';
 import { DEPARTMENTS } from '@/components/Navbar';
 import { ProjectCard } from '@/components/ProjectCard';
+import { SkillProgressionRoadmap } from '@/components/SkillProgressionRoadmap';
 import {
   Search,
   Filter,
@@ -99,6 +100,9 @@ export default function ProjectsCatalogPage() {
             Filter reproducible hardware, cloud, IoT, and AI systems across 8 departments. Every project includes circuit schematics, source code, and viva defense Q&A.
           </p>
         </div>
+
+        {/* ── Skill Progression Roadmap for ECE & EEE ── */}
+        <SkillProgressionRoadmap />
 
         {/* Filter Bar & Search Bar */}
         <div className="ha-card p-4 sm:p-5 rounded-2xl bg-white border border-[#E2E8E4] mb-8 space-y-4 shadow-xs">

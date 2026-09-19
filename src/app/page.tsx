@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ProjectCard } from '@/components/ProjectCard';
+import { SkillProgressionRoadmap } from '@/components/SkillProgressionRoadmap';
 import { PROJECTS_DATA, Project } from '@/data/projects';
 import { DEPARTMENTS } from '@/components/Navbar';
 import {
@@ -184,6 +185,9 @@ export default function HomePage() {
             );
           })}
         </div>
+
+        {/* ── Official Skill Progression Roadmap (ECE & EEE) ── */}
+        <SkillProgressionRoadmap />
       </section>
 
       {/* ── 3. FEATURED PROJECTS ─────────────────────────────────────────────────── */}

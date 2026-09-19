@@ -26,7 +26,8 @@ import {
   ChevronRight,
   ShieldCheck,
   User,
-  Bell
+  Bell,
+  Mail
 } from 'lucide-react';
 
 type SidebarTab = 
@@ -176,15 +177,29 @@ export default function StudentDashboardPage() {
               })}
             </div>
 
-            {/* Quick Support Badge */}
-            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2 text-xs">
+            {/* Quick Support & Founder Hotline Badge */}
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-3 text-xs">
               <span className="font-bold text-[#087443] flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4" />
-                <span>Mentor Review Scheduled</span>
+                <span>Founder Mentorship Hotline</span>
               </span>
               <p className="text-[#647067] text-[11px] leading-relaxed">
-                Your viva simulation review is scheduled with mentor Dr. Ramanathan on Oct 18.
+                Stuck on circuit wiring or viva questions? Reach out directly:
               </p>
+              <div className="space-y-1 text-[11px] font-mono">
+                <a href="tel:+918778954899" className="flex items-center justify-between text-[#17211B] hover:text-[#087443] font-semibold">
+                  <span>Ajithkumar:</span>
+                  <span className="text-[#087443]">8778954899</span>
+                </a>
+                <a href="tel:+919342540464" className="flex items-center justify-between text-[#17211B] hover:text-[#087443] font-semibold">
+                  <span>Harishkumar:</span>
+                  <span className="text-[#087443]">9342540464</span>
+                </a>
+                <a href="mailto:halabs.project@gmail.com" className="flex items-center gap-1.5 pt-1 text-[#087443] hover:underline font-semibold text-[10px] break-all">
+                  <Mail className="w-3 h-3 shrink-0" />
+                  <span>halabs.project@gmail.com</span>
+                </a>
+              </div>
             </div>
           </div>
 

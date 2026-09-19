@@ -33,8 +33,14 @@ import {
   FileText,
   DollarSign,
   AlertCircle,
-  GitBranch,
-  FolderGit2
+  Play,
+  FileCode,
+  Lock,
+  Unlock,
+  CreditCard,
+  MessageSquare,
+  PackageCheck,
+  Headphones
 } from 'lucide-react';
 
 const TAB_LIST = [
@@ -59,7 +65,11 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
   const project = PROJECTS_DATA.find((p) => p.slug === params.slug);
   const [activeTab, setActiveTab] = useState<TabType>('Overview');
   const [expandedViva, setExpandedViva] = useState<number | null>(0);
-  const { isProjectSaved, toggleSaveProject, startProject } = useProjectStore();
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
+
+  const { isProjectSaved, toggleSaveProject, startProject, isProjectPurchased, purchaseProject } = useProjectStore();
 
   if (!project) {
     return (
@@ -74,48 +84,53 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
   }
 
   const saved = isProjectSaved(project.id);
+  const purchased = isProjectPurchased(project.id);
   const deptCode = project.branch?.[0] || 'ECE';
   const rating = 4.9;
-  const reviewsCount = 34;
+  const reviewsCount = 38;
+  const basePrice = 4999;
 
-  const skillsList = project.learningOutcomes?.length
-    ? project.learningOutcomes
-    : [
-        'Embedded Systems Architecture & Pin Mapping',
-        'IoT Telemetry & MQTT/HTTP Cloud Streaming',
-        'Relational Database Schema Design',
-        'Interactive Responsive Web Dashboards',
-        'Hardware Debugging & Signal Noise Filtering'
-      ];
+  const addonOptions = [
+    { id: 'install', label: '1-on-1 Hardware & Toolchain Setup Support', price: 999 },
+    { id: 'custom', label: 'Customization to College / Guide Syllabus', price: 1999 },
+    { id: 'mentor', label: '2-Hour External Examiner Viva Defense Coaching', price: 999 },
+  ];
+
+  const totalCheckoutPrice = basePrice + selectedAddons.reduce((sum, id) => {
+    const found = addonOptions.find((a) => a.id === id);
+    return sum + (found ? found.price : 0);
+  }, 0);
+
+  const handleCompletePurchase = () => {
+    const addonsLabels = selectedAddons.map((id) => addonOptions.find((a) => a.id === id)?.label || id);
+    purchaseProject(project.id, project.title, totalCheckoutPrice, addonsLabels);
+    setCheckoutModalOpen(false);
+  };
+
+  const packageDeliverables = [
+    'Complete Commented Source Code (Firmware C++ & Node.js/Python)',
+    'Pin-to-Pin Circuit Diagram & Fritzing Wiring Schematics',
+    'Industrial PCB Layout (Gerber & KiCad project files)',
+    'Full University Project Documentation & Abstract (IEEE DOCX)',
+    'Hardware Bill of Materials (BOM) with Indian component pricing',
+    'Relational Database Schema (.sql) & Ingestion Endpoints',
+    'Responsive Web Dashboard & Mobile Application Code',
+    'Step-by-Step Toolchain & Flashing Setup Instructions',
+    '1080p Working Prototype Video Demonstration',
+    'Docker Container Configurations & AWS Cloud Deployment Guide',
+    '15-Minute Review Slide Deck Presentation (PPTX)',
+    'External Examiner Viva Defense Question Bank with Verified Answers'
+  ];
 
   const bomItems = project.bom && project.bom.length > 0 ? project.bom : [
     { component: 'ESP32 NodeMCU DevKit v1', specs: '38-pin Dual Core Wi-Fi + BLE', qty: 1, estCost: 450 },
-    { component: 'HC-SR04 Ultrasonic Sensor Array', specs: '5V sonar 2cm–400cm precision', qty: 4, estCost: 320 },
-    { component: 'RC522 13.56MHz RFID Reader', specs: 'SPI protocol with 2 keycards', qty: 1, estCost: 180 },
-    { component: 'I2C 16x2 LCD Display Module', specs: 'PCF8574 Backpack 5V', qty: 1, estCost: 220 },
-    { component: 'SG90 Micro Servo Motor 9g', specs: '4.8V–6V 180 degree rotation', qty: 1, estCost: 130 },
-    { component: '5V 2A Regulated DC Power Adapter', specs: 'SMPS regulated with DC jack', qty: 1, estCost: 250 },
+    { component: 'Precision Sensor Matrix', specs: 'Factory calibrated analog/digital probes', qty: 2, estCost: 650 },
+    { component: 'Solid State Relay / Driver IC', specs: 'Optocoupler isolated switching', qty: 1, estCost: 280 },
+    { component: 'I2C 16x2 Diagnostic LCD Display', specs: 'PCF8574 backpack 5V', qty: 1, estCost: 220 },
+    { component: 'Regulated DC Power Adapter 5V/12V', specs: 'Low-ripple SMPS lab supply', qty: 1, estCost: 350 },
   ];
 
-  const totalCost = bomItems.reduce((acc, curr) => acc + (curr.estCost * curr.qty), 0);
-
-  const roadmapMilestones = project.roadmap && project.roadmap.length > 0 ? project.roadmap : [
-    { step: '01', title: 'Component Sourcing & Breadboard Bench Test', desc: 'Verify all pin connections and power supply stability before soldering.' },
-    { step: '02', title: 'Firmware Implementation & Sensor Calibration', desc: 'Code debounce logic and stream real-time JSON packets over Wi-Fi.' },
-    { step: '03', title: 'Backend REST API & Cloud Database Ingestion', desc: 'Setup database schema and test endpoints with Postman.' },
-    { step: '04', title: 'Web Dashboard & Real-Time Visualization', desc: 'Connect frontend websockets or polling to display live sensor telemetry.' },
-    { step: '05', title: 'System Enclosure & 3D Prototyping', desc: 'Assemble the physical demo chassis with acrylic or 3D printed brackets.' },
-    { step: '06', title: 'IEEE Project Report & Viva Question Defense', desc: 'Finalize document chapters, block diagrams, and presentation slides.' },
-  ];
-
-  const teamRoles = [
-    { role: 'Hardware & Circuit Lead', tasks: 'Breadboard wiring, power distribution, component soldering, signal validation.' },
-    { role: 'Firmware & Embedded Lead', tasks: 'ESP32 C++ code, sensor calibration, MQTT telemetry, serial debugging.' },
-    { role: 'Cloud & Fullstack Lead', tasks: 'REST APIs, database migrations, real-time web UI, Docker deployment.' },
-    { role: 'Documentation & Viva Lead', tasks: 'IEEE report preparation, CAD/circuit diagrams, slide deck, presentation.' },
-  ];
-
-  const relatedProjects = PROJECTS_DATA.filter((p) => p.id !== project.id && p.branch.some((b) => project.branch.includes(b))).slice(0, 3);
+  const totalHardwareCost = bomItems.reduce((acc, curr) => acc + (curr.estCost * curr.qty), 0);
 
   return (
     <div className="min-h-screen tech-grid-bg py-8 sm:py-12">
@@ -132,38 +147,62 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
           <span className="text-[#17211B] font-semibold truncate max-w-[240px] sm:max-w-none">{project.title}</span>
         </div>
 
-        {/* ── 1. HERO SECTION ──────────────────────────────────────────────────────── */}
+        {/* ── 1. PRODUCT MARKETPLACE HERO ──────────────────────────────────────────── */}
         <div className="ha-card rounded-3xl bg-white border border-[#E2E8E4] p-6 sm:p-10 mb-8 shadow-sm relative overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            {/* Left Column: Project Metadata & Overview */}
-            <div className="lg:col-span-7 space-y-4">
+            {/* Left Column: Project Overview & Marketplace Specs */}
+            <div className="lg:col-span-7 space-y-5">
+              
+              {/* Badges Row */}
               <div className="flex flex-wrap items-center gap-2">
+                <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#087443] text-white flex items-center gap-1 shadow-xs">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#84CC16]" />
+                  <span>✅ Verified by HA Labs</span>
+                </span>
                 <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#087443]/10 text-[#087443] border border-[#087443]/20">
-                  {deptCode} DEPARTMENT
+                  {deptCode}
                 </span>
                 <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
                   {project.difficulty} Level
                 </span>
                 <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
                   <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                  <span>{rating} Rating</span>
+                  <span>{rating}</span>
                   <span className="text-[#647067]">({reviewsCount} Reviews)</span>
                 </span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#17211B] tracking-tight leading-tight">
-                {project.title}
-              </h1>
-
-              <p className="text-sm sm:text-base text-[#647067] leading-relaxed">
-                {project.description || project.tagline}
-              </p>
-
-              {/* Technologies Stack */}
+              {/* Title & Tagline */}
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-[#647067] mb-2">
-                  Technologies & Tools
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#17211B] tracking-tight leading-tight">
+                  {project.title}
+                </h1>
+                <p className="text-sm sm:text-base text-[#647067] leading-relaxed mt-2">
+                  {project.description || project.tagline}
+                </p>
+              </div>
+
+              {/* Quick Specs Matrix */}
+              <div className="grid grid-cols-3 gap-3 p-3.5 rounded-2xl bg-[#F8FAF9] border border-[#E2E8E4] text-xs">
+                <div>
+                  <span className="text-[10px] text-[#647067] uppercase font-mono block">Estimated Build</span>
+                  <strong className="text-[#17211B] font-mono mt-0.5 block">{project.duration || '3–4 Weeks'}</strong>
+                </div>
+                <div className="border-x border-[#E2E8E4] px-3">
+                  <span className="text-[10px] text-[#647067] uppercase font-mono block">Team Allocation</span>
+                  <strong className="text-[#17211B] font-mono mt-0.5 block">{project.teamSize || '3–4 Members'}</strong>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[#647067] uppercase font-mono block">Lab Hardware Cost</span>
+                  <strong className="text-[#087443] font-mono mt-0.5 block">~₹{totalHardwareCost.toLocaleString('en-IN')}</strong>
+                </div>
+              </div>
+
+              {/* Technologies Pills */}
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-[#647067] mb-2 font-mono">
+                  Stack & Toolchains:
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {project.technologies.map((tech) => (
@@ -177,74 +216,268 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
                 </div>
               </div>
 
-              {/* Meta pills: Team Size & Duration */}
-              <div className="flex items-center gap-6 pt-2 text-xs font-medium text-[#647067]">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#087443]" />
-                  <span>Recommended: <strong>{project.teamSize || '2–4 Members'}</strong></span>
+              {/* Package Deliverables Checklist */}
+              <div className="pt-2">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#087443] mb-2 flex items-center gap-1.5">
+                  <PackageCheck className="w-4 h-4 text-[#16A34A]" />
+                  <span>Complete Package Includes (12 Items):</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-[#087443]" />
-                  <span>Timeline: <strong>{project.duration || '4–6 Weeks'}</strong></span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#17211B]">
+                  {packageDeliverables.slice(0, 8).map((del, idx) => (
+                    <div key={idx} className="flex items-start gap-1.5">
+                      <Check className="w-3.5 h-3.5 text-[#16A34A] shrink-0 mt-0.5" />
+                      <span className="line-clamp-1">{del}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-4 flex flex-wrap items-center gap-3">
-                <Link
-                  href={`/setup?project=${encodeURIComponent(project.slug)}`}
-                  onClick={() => startProject(project.id, `Team ${project.title.slice(0, 12)}`, 'Project Lead')}
-                  className="px-6 py-3 rounded-xl bg-[#087443] hover:bg-[#065331] text-white font-bold text-sm shadow-sm hover:shadow-md transition-all flex items-center gap-2 hover:-translate-y-0.5"
-                >
-                  <Wrench className="w-4 h-4 text-[#84CC16]" />
-                  <span>Start Building Project</span>
-                </Link>
-
-                <button
-                  onClick={() => toggleSaveProject(project.id)}
-                  className={`px-4 py-3 rounded-xl border font-semibold text-xs sm:text-sm transition-all flex items-center gap-2 ${
-                    saved
-                      ? 'bg-[#087443]/10 border-[#087443] text-[#087443]'
-                      : 'bg-white border-[#E2E8E4] text-[#17211B] hover:border-[#087443]'
-                  }`}
-                >
-                  <Bookmark className={`w-4 h-4 ${saved ? 'fill-[#087443]' : ''}`} />
-                  <span>{saved ? 'Saved in Workspace' : 'Save Project'}</span>
-                </button>
-
-                <a
-                  href="#documentation"
-                  className="px-4 py-3 rounded-xl border border-[#E2E8E4] hover:border-[#087443] text-[#17211B] font-semibold text-xs sm:text-sm transition-all flex items-center gap-2 bg-white"
-                >
-                  <Download className="w-4 h-4 text-[#087443]" />
-                  <span>Starter Kit (ZIP)</span>
-                </a>
-              </div>
             </div>
 
-            {/* Right Column: Hero Image Preview */}
-            <div className="lg:col-span-5">
-              <div className="rounded-2xl overflow-hidden border border-[#E2E8E4] bg-[#F1F5F3] aspect-[4/3] shadow-inner relative group">
+            {/* Right Column: Pricing Box & Purchase / Unlocked Action */}
+            <div className="lg:col-span-5 space-y-4">
+              
+              {/* Product Visual Thumbnail */}
+              <div className="rounded-2xl overflow-hidden border border-[#E2E8E4] bg-[#F1F5F3] aspect-[16/10] shadow-inner relative group">
                 <img
                   src={project.gallery?.overview || `/projects/${project.slug}/overview.webp`}
-                  alt={`${project.title} Blueprint Overview`}
+                  alt={`${project.title} Preview`}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
                       'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80';
                   }}
                 />
-                <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-white/90 backdrop-blur-md border border-[#E2E8E4] flex items-center justify-between text-xs">
-                  <span className="font-mono font-semibold text-[#17211B]">Hardware + Firmware + UI</span>
-                  <span className="text-[#087443] font-bold">Verified Build ✓</span>
-                </div>
+                <button
+                  onClick={() => setDemoModalOpen(true)}
+                  className="absolute inset-0 bg-black/40 hover:bg-black/50 transition-colors flex items-center justify-center gap-2 text-white font-bold text-xs backdrop-blur-xs"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#087443] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <Play className="w-4 h-4 fill-white ml-0.5" />
+                  </div>
+                  <span>Watch Working Demo Video</span>
+                </button>
               </div>
+
+              {/* Purchase Card / Unlocked State */}
+              <div className="ha-card p-6 rounded-2xl bg-white border border-[#E2E8E4] space-y-4">
+                {purchased ? (
+                  // ALREADY PURCHASED UNLOCKED STATE
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between pb-3 border-b border-[#E2E8E4]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-[#16A34A]/10 text-[#16A34A] flex items-center justify-center">
+                          <Unlock className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-[#087443]">Project Unlocked</div>
+                          <span className="text-[10px] text-[#647067] font-mono">Full Deliverables Access</span>
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded bg-emerald-50 text-[#087443] font-mono text-[10px] font-bold">
+                        v1.2 (2026 Ready)
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-[#647067] leading-relaxed">
+                      You own this verified project package. All source code, circuit files, database schemas, and documentation are ready for download below.
+                    </p>
+
+                    <div className="pt-2 flex flex-col gap-2">
+                      <a
+                        href="#unlocked-downloads"
+                        className="w-full py-3 px-4 rounded-xl bg-[#087443] hover:bg-[#065331] text-white font-bold text-xs text-center shadow-xs transition-all flex items-center justify-center gap-2"
+                      >
+                        <Download className="w-4 h-4 text-[#84CC16]" />
+                        <span>Open Download Workspace</span>
+                      </a>
+                      <Link
+                        href="/setup"
+                        className="w-full py-2.5 px-4 rounded-xl border border-[#E2E8E4] hover:border-[#087443] text-[#17211B] font-semibold text-xs text-center hover:bg-[#F8FAF9] transition-all"
+                      >
+                        Setup Team Workspace →
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  // MARKETPLACE PURCHASE BUY BOX
+                  <div className="space-y-4">
+                    <div className="flex items-baseline justify-between">
+                      <div>
+                        <div className="text-xs font-bold text-[#647067] uppercase font-mono">Academic License</div>
+                        <div className="flex items-baseline gap-2 mt-0.5">
+                          <span className="text-3xl font-black text-[#17211B] font-mono">
+                            ₹{basePrice.toLocaleString('en-IN')}
+                          </span>
+                          <span className="text-sm text-slate-400 line-through font-mono">₹8,999</span>
+                          <span className="px-2 py-0.5 rounded bg-[#16A34A]/10 text-[#087443] text-[10px] font-bold">
+                            45% OFF
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[11px] font-mono text-[#087443] font-bold">Instant Unlock</span>
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t border-[#E2E8E4] text-xs">
+                      <button
+                        onClick={() => setCheckoutModalOpen(true)}
+                        className="w-full py-3.5 px-4 rounded-xl bg-[#087443] hover:bg-[#065331] text-white font-bold text-sm shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5"
+                      >
+                        <CreditCard className="w-4 h-4 text-[#84CC16]" />
+                        <span>Buy Project (₹{basePrice.toLocaleString('en-IN')})</span>
+                      </button>
+
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <button
+                          onClick={() => setDemoModalOpen(true)}
+                          className="py-2 px-2.5 rounded-xl border border-[#E2E8E4] hover:border-[#087443] text-[#17211B] font-semibold text-xs transition-all flex items-center justify-center gap-1"
+                        >
+                          <Play className="w-3 h-3 text-[#087443]" />
+                          <span>View Demo</span>
+                        </button>
+
+                        <a
+                          href="#documentation"
+                          className="py-2 px-2.5 rounded-xl border border-[#E2E8E4] hover:border-[#087443] text-[#17211B] font-semibold text-xs transition-all flex items-center justify-center gap-1"
+                        >
+                          <FileText className="w-3 h-3 text-[#087443]" />
+                          <span>Preview Docs</span>
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Guarantee */}
+                    <div className="pt-2 border-t border-[#E2E8E4] flex items-center justify-between text-[11px] text-[#647067]">
+                      <span className="flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-[#087443]" />
+                        <span>100% Compile Guarantee</span>
+                      </span>
+                      <button
+                        onClick={() => toggleSaveProject(project.id)}
+                        className="text-[#087443] hover:underline font-bold"
+                      >
+                        {saved ? 'Saved ★' : 'Save for later'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
             </div>
 
           </div>
         </div>
 
-        {/* ── 2. TABBED INTERFACE ─────────────────────────────────────────────────── */}
+        {/* ── 2. UNLOCKED DELIVERABLES WORKSPACE (AFTER PURCHASE) ────────────────────── */}
+        {purchased && (
+          <div id="unlocked-downloads" className="ha-card rounded-3xl bg-white border border-[#087443]/40 p-6 sm:p-8 mb-8 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E2E8E4]">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A] animate-pulse" />
+                  <span className="text-xs font-mono font-bold text-[#087443] uppercase tracking-wider">
+                    My Purchased Project Files · Version 1.2
+                  </span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-[#17211B] mt-1">
+                  Download Project Deliverables Package
+                </h2>
+                <p className="text-xs text-[#647067] mt-0.5">
+                  Full verified assets for lab submission, circuit manufacturing, and viva defense.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href="/resources"
+                  className="px-3.5 py-2 rounded-xl border border-[#E2E8E4] hover:border-[#087443] text-xs font-semibold text-[#17211B] flex items-center gap-1.5"
+                >
+                  <Headphones className="w-3.5 h-3.5 text-[#087443]" />
+                  <span>Request Customization</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Unlocked Deliverables Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              
+              {/* 1. Source Code */}
+              <div className="p-4 rounded-2xl bg-[#F8FAF9] border border-[#E2E8E4] flex flex-col justify-between space-y-3">
+                <div className="space-y-1">
+                  <div className="w-9 h-9 rounded-xl bg-[#087443]/10 text-[#087443] flex items-center justify-center">
+                    <FileCode className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-xs font-bold text-[#17211B] mt-2">Firmware & Source Code</h3>
+                  <p className="text-[11px] text-[#647067]">ESP32 C++ .ino, REST APIs, and web UI bundle (1.4 MB)</p>
+                </div>
+                <button
+                  onClick={() => alert('Downloading source code archive: ' + project.slug + '_code_v1.2.zip')}
+                  className="w-full py-2 rounded-xl bg-[#087443] text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-[#065331]"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Code (ZIP)</span>
+                </button>
+              </div>
+
+              {/* 2. Circuit & PCB */}
+              <div className="p-4 rounded-2xl bg-[#F8FAF9] border border-[#E2E8E4] flex flex-col justify-between space-y-3">
+                <div className="space-y-1">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-xs font-bold text-[#17211B] mt-2">Circuit & PCB Files</h3>
+                  <p className="text-[11px] text-[#647067]">Fritzing (.fzz), KiCad schematic, and Gerber layout</p>
+                </div>
+                <button
+                  onClick={() => alert('Downloading PCB schematics: ' + project.slug + '_pcb_schematics.zip')}
+                  className="w-full py-2 rounded-xl bg-white border border-[#E2E8E4] hover:border-[#087443] text-[#17211B] font-bold text-xs flex items-center justify-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5 text-[#087443]" />
+                  <span>Download PCB Pack</span>
+                </button>
+              </div>
+
+              {/* 3. Documentation & Report */}
+              <div className="p-4 rounded-2xl bg-[#F8FAF9] border border-[#E2E8E4] flex flex-col justify-between space-y-3">
+                <div className="space-y-1">
+                  <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-xs font-bold text-[#17211B] mt-2">IEEE Report & Slides</h3>
+                  <p className="text-[11px] text-[#647067]">60-page editable DOCX report and 15-minute PPT deck</p>
+                </div>
+                <button
+                  onClick={() => alert('Downloading IEEE documentation: ' + project.slug + '_ieee_report.docx')}
+                  className="w-full py-2 rounded-xl bg-white border border-[#E2E8E4] hover:border-[#087443] text-[#17211B] font-bold text-xs flex items-center justify-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5 text-[#087443]" />
+                  <span>Download DOCX & PPT</span>
+                </button>
+              </div>
+
+              {/* 4. Database & Deployment */}
+              <div className="p-4 rounded-2xl bg-[#F8FAF9] border border-[#E2E8E4] flex flex-col justify-between space-y-3">
+                <div className="space-y-1">
+                  <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center">
+                    <Server className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-xs font-bold text-[#17211B] mt-2">Database & Deployment</h3>
+                  <p className="text-[11px] text-[#647067]">SQL migration schema and Docker Compose configurations</p>
+                </div>
+                <button
+                  onClick={() => alert('Downloading database and deployment files: ' + project.slug + '_deployment.zip')}
+                  className="w-full py-2 rounded-xl bg-white border border-[#E2E8E4] hover:border-[#087443] text-[#17211B] font-bold text-xs flex items-center justify-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5 text-[#087443]" />
+                  <span>Download SQL & Docker</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* ── 3. 13-TAB TECHNICAL SPECIFICATION INTERFACE ─────────────────────────── */}
         <div className="mb-8">
           <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none border-b border-[#E2E8E4]">
             {TAB_LIST.map((tab) => {
@@ -293,7 +526,7 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
                       System Architecture Flow
                     </div>
                     <p className="text-xs sm:text-sm text-[#17211B] leading-relaxed">
-                      {project.architecture || 'Sensors → Microcontroller (ESP32) → MQTT / REST Gateway → Node.js Cloud API → Relational DB → Next.js / Tailwind CSS Web Portal'}
+                      {project.architecture}
                     </p>
                   </div>
                 </div>
@@ -317,14 +550,14 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[#087443] font-mono text-xs font-bold uppercase tracking-wider">
                   <AlertCircle className="w-4 h-4" />
-                  <span>Real-World Challenge</span>
+                  <span>Real-World Engineering Challenge</span>
                 </div>
-                <h3 className="text-xl font-bold text-[#17211B]">The Engineering Problem</h3>
+                <h3 className="text-xl font-bold text-[#17211B]">The Problem Solved</h3>
                 <p className="text-sm sm:text-base text-[#647067] leading-relaxed bg-[#F8FAF9] p-5 rounded-2xl border border-[#E2E8E4]">
-                  {project.problem || 'Traditional systems rely on manual monitoring and delayed human inspection, causing resource wastage, prolonged down-times, safety hazards, and inability to detect localized anomalies before catastrophic failure.'}
+                  {project.problem}
                 </p>
                 <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-[#087443] text-xs sm:text-sm font-medium">
-                  <strong>Why it matters for Academic Viva:</strong> External evaluators look for the specific pain points your prototype addresses, backed by quantifiable efficiency metrics.
+                  <strong>Academic Evaluation Value:</strong> Examiners look for quantifiable problem formulations, identifying why existing manual or low-frequency monitoring systems fail under scale.
                 </div>
               </div>
             )}
@@ -332,14 +565,14 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
             {/* Objectives */}
             {activeTab === 'Objectives' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-bold text-[#17211B]">Design & Technical Objectives</h3>
+                <h3 className="text-xl font-bold text-[#17211B]">Engineering Design Objectives</h3>
                 <div className="space-y-3">
                   {[
-                    'Design an energy-efficient sensor edge node capable of continuous operation.',
-                    'Implement low-latency telemetry transmission over MQTT with sub-second response times.',
-                    'Develop a resilient fail-safe mechanism that maintains local logging during Wi-Fi outages.',
-                    'Build a cloud-synced dashboard with real-time alerting and historical analytics.',
-                    'Keep total bill-of-materials cost under the target student project budget.',
+                    `Develop an edge telemetry node utilizing ${project.technologies[0]} with sub-second sample rates.`,
+                    'Implement low-power sleep modes and fail-safe watchdog timer resets.',
+                    'Build an interactive telemetry dashboard with live indicator cards and CSV log downloads.',
+                    'Keep total bill-of-materials cost within accessible student project budgets.',
+                    'Prepare verified academic deliverables adhering strictly to university capstone review formats.'
                   ].map((obj, i) => (
                     <div key={i} className="p-3.5 rounded-xl bg-[#F8FAF9] border border-[#E2E8E4] flex items-center gap-3 text-xs sm:text-sm text-[#17211B]">
                       <span className="w-6 h-6 rounded-full bg-[#087443] text-white font-mono text-xs font-bold flex items-center justify-center shrink-0">
@@ -355,22 +588,22 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
             {/* Architecture */}
             {activeTab === 'Architecture' && (
               <div className="space-y-6">
-                <h3 className="text-xl font-bold text-[#17211B]">Multi-Tier System Architecture</h3>
+                <h3 className="text-xl font-bold text-[#17211B]">End-to-End System Architecture</h3>
                 <div className="p-5 rounded-2xl bg-[#F8FAF9] border border-[#E2E8E4] font-mono text-xs text-[#087443] overflow-x-auto">
-                  {project.architecture || 'Sensors (Hardware Layer) ──> ESP32 Edge Controller (Firmware) ──> MQTT Broker ──> Node.js Backend ──> MySQL Database ──> Web Dashboard (Presentation Layer)'}
+                  {project.architecture}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                   <div className="p-4 rounded-xl border border-[#E2E8E4] bg-white space-y-1.5">
-                    <span className="font-bold text-[#087443] block">Tier 1: Edge Sensing</span>
-                    <p className="text-[#647067]">Ultrasonic, DHT22, RFID scanners interfacing directly with microcontroller GPIO/I2C buses.</p>
+                    <span className="font-bold text-[#087443] block">1. Edge Sensing Tier</span>
+                    <p className="text-[#647067]">{project.hardware.slice(0, 3).join(', ')}</p>
                   </div>
                   <div className="p-4 rounded-xl border border-[#E2E8E4] bg-white space-y-1.5">
-                    <span className="font-bold text-[#087443] block">Tier 2: Ingestion & API</span>
-                    <p className="text-[#647067]">Node.js Express gateway sanitizing incoming telemetry payloads and managing auth tokens.</p>
+                    <span className="font-bold text-[#087443] block">2. Ingestion & Storage</span>
+                    <p className="text-[#647067]">MQTT Broker + Node.js REST API + Relational Database.</p>
                   </div>
                   <div className="p-4 rounded-xl border border-[#E2E8E4] bg-white space-y-1.5">
-                    <span className="font-bold text-[#087443] block">Tier 3: UI & Analytics</span>
-                    <p className="text-[#647067]">Next.js frontend rendering live heatmaps, charts, and administrative controls.</p>
+                    <span className="font-bold text-[#087443] block">3. Presentation Tier</span>
+                    <p className="text-[#647067]">Tailwind CSS dashboard with real-time analytics and alerts.</p>
                   </div>
                 </div>
               </div>
@@ -380,9 +613,9 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
             {activeTab === 'Hardware' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-[#17211B]">Bill of Materials & Component Specs</h3>
+                  <h3 className="text-xl font-bold text-[#17211B]">Bill of Materials (BOM) & Specs</h3>
                   <span className="px-3 py-1 rounded-full bg-emerald-50 text-[#087443] font-bold text-xs">
-                    Est. Total: ₹{totalCost.toLocaleString('en-IN')}
+                    Est. Total: ₹{totalHardwareCost.toLocaleString('en-IN')}
                   </span>
                 </div>
                 <div className="overflow-x-auto">
@@ -410,28 +643,28 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
               </div>
             )}
 
-            {/* Software Requirements */}
+            {/* Software */}
             {activeTab === 'Software' && (
               <div className="space-y-4">
                 <h3 className="text-xl font-bold text-[#17211B]">Software Toolchains & Libraries</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="p-4 rounded-xl bg-[#F8FAF9] border border-[#E2E8E4] space-y-2">
-                    <span className="text-xs font-bold text-[#087443] uppercase tracking-wider block">Embedded Toolchain</span>
+                    <span className="text-xs font-bold text-[#087443] uppercase tracking-wider block">Embedded Firmware</span>
                     <ul className="text-xs text-[#647067] space-y-1.5 list-disc list-inside">
-                      <li>Arduino IDE 2.x or VS Code + PlatformIO</li>
-                      <li>ESP32 Board Support Package (Espressif v2.0.14)</li>
-                      <li>PubSubClient MQTT library</li>
-                      <li>ArduinoJson v6.21+ serialization</li>
+                      <li>Arduino IDE 2.x or VS Code with PlatformIO</li>
+                      <li>Espressif ESP32 Core Library (v2.0.14+)</li>
+                      <li>PubSubClient MQTT protocol driver</li>
+                      <li>ArduinoJson v6.x for serialization</li>
                     </ul>
                   </div>
 
                   <div className="p-4 rounded-xl bg-[#F8FAF9] border border-[#E2E8E4] space-y-2">
-                    <span className="text-xs font-bold text-[#087443] uppercase tracking-wider block">Cloud & Web Stack</span>
+                    <span className="text-xs font-bold text-[#087443] uppercase tracking-wider block">Backend & Web Stack</span>
                     <ul className="text-xs text-[#647067] space-y-1.5 list-disc list-inside">
-                      <li>Node.js LTS (v18 or v20)</li>
-                      <li>Express REST Framework & CORS</li>
-                      <li>PostgreSQL / MySQL Relational Database</li>
-                      <li>Tailwind CSS & Chart.js for data visualization</li>
+                      <li>Node.js LTS (v18 or v20) / Python 3.10+</li>
+                      <li>Express REST API Gateway & WebSockets</li>
+                      <li>MySQL / PostgreSQL database schema</li>
+                      <li>Next.js & Tailwind CSS dashboard components</li>
                     </ul>
                   </div>
                 </div>
@@ -441,20 +674,20 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
             {/* Circuit Diagram */}
             {activeTab === 'Circuit Diagram' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-bold text-[#17211B]">Schematic & Pin-to-Pin Interconnects</h3>
+                <h3 className="text-xl font-bold text-[#17211B]">Pin-to-Pin Interconnects & Schematics</h3>
                 <div className="p-5 rounded-2xl bg-[#F8FAF9] border border-[#E2E8E4] space-y-3">
-                  <div className="text-xs font-mono font-bold text-[#087443]">ESP32 DevKit Pin Assignments:</div>
+                  <div className="text-xs font-mono font-bold text-[#087443]">GPIO Pin Mapping:</div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-[#17211B]">
-                    <div className="p-2.5 rounded bg-white border border-[#E2E8E4]">GPIO 5 → HC-SR04 Trigger Pin</div>
-                    <div className="p-2.5 rounded bg-white border border-[#E2E8E4]">GPIO 18 → HC-SR04 Echo (via voltage divider)</div>
-                    <div className="p-2.5 rounded bg-white border border-[#E2E8E4]">GPIO 21 (SDA) → I2C LCD Display SDA</div>
-                    <div className="p-2.5 rounded bg-white border border-[#E2E8E4]">GPIO 22 (SCL) → I2C LCD Display SCL</div>
-                    <div className="p-2.5 rounded bg-white border border-[#E2E8E4]">GPIO 13 → SG90 Servo PWM Signal</div>
-                    <div className="p-2.5 rounded bg-white border border-[#E2E8E4]">VIN (5V) → Common 5V DC Bus (2A supply)</div>
+                    <div className="p-2.5 rounded bg-white border border-[#E2E8E4]">GPIO 21 (SDA) → I2C Sensor Bus SDA</div>
+                    <div className="p-2.5 rounded bg-white border border-[#E2E8E4]">GPIO 22 (SCL) → I2C Sensor Bus SCL</div>
+                    <div className="p-2.5 rounded bg-white border border-[#E2E8E4]">GPIO 4 (ADC) → Analog Sensor Probe Pin</div>
+                    <div className="p-2.5 rounded bg-white border border-[#E2E8E4]">GPIO 18 / 19 → SPI Chip Select & Clock</div>
+                    <div className="p-2.5 rounded bg-white border border-[#E2E8E4]">GPIO 5 → Optocoupler Relay Trigger</div>
+                    <div className="p-2.5 rounded bg-white border border-[#E2E8E4]">VIN / GND → 5V 2A Regulated Power Bus</div>
                   </div>
                 </div>
                 <p className="text-xs text-[#647067]">
-                  * Note: Complete Fritzing breadboard layout (.fzz) and KiCad PCB schematics are included in the downloadable starter kit.
+                  * Full KiCad PCB schematics and Fritzing breadboard layouts are included in the downloadable project zip.
                 </p>
               </div>
             )}
@@ -462,9 +695,9 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
             {/* Implementation */}
             {activeTab === 'Implementation' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-bold text-[#17211B]">Step-by-Step Implementation Guide</h3>
+                <h3 className="text-xl font-bold text-[#17211B]">Implementation Roadmap</h3>
                 <div className="space-y-3">
-                  {roadmapMilestones.map((m, idx) => (
+                  {project.roadmap.map((m, idx) => (
                     <div key={idx} className="p-4 rounded-xl bg-[#F8FAF9] border border-[#E2E8E4] flex items-start gap-3">
                       <span className="w-7 h-7 rounded-lg bg-[#087443] text-white font-mono text-xs font-bold flex items-center justify-center shrink-0">
                         {m.step}
@@ -483,16 +716,17 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
             {activeTab === 'Code' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-[#17211B]">Firmware Snippet (ESP32 C++)</h3>
-                  <span className="text-xs font-mono text-[#087443]">firmware_main.ino</span>
+                  <h3 className="text-xl font-bold text-[#17211B]">Firmware Preview</h3>
+                  <span className="text-xs font-mono text-[#087443]">main_firmware.ino</span>
                 </div>
                 <pre className="p-4 rounded-xl bg-[#17211B] text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed">
 {`#include <WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
+// HA Labs Verified Firmware v1.2
 const char* ssid = "CAMPUS_WIFI";
-const char* password = "SECRET_PASSWORD";
+const char* password = "PASSWORD";
 const char* mqtt_server = "broker.hivemq.com";
 
 WiFiClient espClient;
@@ -501,56 +735,51 @@ PubSubClient client(espClient);
 void setup() {
   Serial.begin(115200);
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
+  while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
   client.setServer(mqtt_server, 1883);
-  Serial.println("\\nConnected to WiFi! Telemetry ready.");
+  Serial.println("\\nHA Labs Edge Node Connected!");
 }
 
 void loop() {
   if (!client.connected()) reconnect();
   client.loop();
-  // Read sensor telemetry and publish JSON packet
-  StaticJsonDocument<200> doc;
-  doc["node_id"] = "HA-ESP32-01";
-  doc["status"] = "ACTIVE";
+  
+  StaticJsonDocument<256> doc;
+  doc["project"] = "${project.slug}";
+  doc["status"] = "OK";
+  doc["timestamp"] = millis();
+  
   char buffer[256];
   serializeJson(doc, buffer);
   client.publish("halabs/telemetry", buffer);
   delay(3000);
 }`}
                 </pre>
-                <p className="text-xs text-[#647067]">
-                  Full commented code with error handling, watchdog timers, and API keys is in the repository.
-                </p>
+                {purchased ? (
+                  <div className="p-3 rounded-xl bg-emerald-50 text-[#087443] text-xs flex items-center justify-between">
+                    <span>You own this project. Download the entire multi-file firmware code in the downloads hub above.</span>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-[#F8FAF9] border border-[#E2E8E4] flex items-center justify-between text-xs">
+                    <span className="text-[#647067]">Full source code with drivers and database migrations unlocked upon purchase.</span>
+                    <button onClick={() => setCheckoutModalOpen(true)} className="text-[#087443] font-bold hover:underline">
+                      Buy Project (₹{basePrice.toLocaleString('en-IN')}) →
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Documentation & Viva */}
             {activeTab === 'Documentation' && (
-              <div className="space-y-6">
+              <div id="documentation" className="space-y-6">
                 <div>
-                  <h3 className="text-xl font-bold text-[#17211B] mb-2">Viva Defense Question Bank</h3>
+                  <h3 className="text-xl font-bold text-[#17211B] mb-2">External Examiner Viva Defense Questions</h3>
                   <p className="text-xs text-[#647067] mb-4">
-                    Common questions asked by external university examiners during 8th semester project viva.
+                    Sample questions external university evaluators ask during 8th-semester project viva examinations.
                   </p>
                   <div className="space-y-3">
-                    {(project.vivaQuestions && project.vivaQuestions.length > 0 ? project.vivaQuestions : [
-                      {
-                        question: 'Why choose ESP32 over traditional Arduino Uno for this project?',
-                        answer: 'ESP32 offers dual 240MHz Tensilica cores, native Wi-Fi/Bluetooth stack, 520KB SRAM for handling JSON and cryptography, and lower overall BOM cost compared to Arduino with an external Wi-Fi shield.'
-                      },
-                      {
-                        question: 'How do you handle sensor reading jitter or false triggers?',
-                        answer: 'We implement software median filtering across 5 consecutive ultrasonic sonar pings to discard outliers before transmitting state changes.'
-                      },
-                      {
-                        question: 'What happens if the local Wi-Fi router loses connection?',
-                        answer: 'The firmware initiates an exponential backoff reconnection loop while caching sensor events in local SPIFFS flash memory to prevent telemetry loss.'
-                      }
-                    ]).map((vq, idx) => (
+                    {project.vivaQuestions.map((vq, idx) => (
                       <div key={idx} className="p-4 rounded-xl border border-[#E2E8E4] bg-[#F8FAF9]">
                         <div
                           onClick={() => setExpandedViva(expandedViva === idx ? null : idx)}
@@ -561,7 +790,7 @@ void loop() {
                         </div>
                         {expandedViva === idx && (
                           <div className="mt-2.5 pt-2.5 border-t border-[#E2E8E4] text-xs text-[#647067] leading-relaxed">
-                            <strong>Answer:</strong> {vq.answer}
+                            <strong>Verified Answer:</strong> {vq.answer}
                           </div>
                         )}
                       </div>
@@ -574,23 +803,23 @@ void loop() {
             {/* Testing */}
             {activeTab === 'Testing' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-bold text-[#17211B]">Validation & Bench Test Matrix</h3>
+                <h3 className="text-xl font-bold text-[#17211B]">Laboratory Bench Test Matrix</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div className="p-3.5 rounded-xl bg-white border border-[#E2E8E4] space-y-1">
-                    <span className="font-bold text-[#087443]">1. Power Rail Stability Test</span>
-                    <p className="text-[#647067]">Tested under full Wi-Fi TX burst load; 5V rail maintained 4.92V with zero brownouts.</p>
+                    <span className="font-bold text-[#087443]">1. Power Rail Ripple & Stability</span>
+                    <p className="text-[#647067]">Tested under continuous Wi-Fi transmission bursts with zero microcontroller brownouts.</p>
                   </div>
                   <div className="p-3.5 rounded-xl bg-white border border-[#E2E8E4] space-y-1">
                     <span className="font-bold text-[#087443]">2. Packet Latency Bench</span>
-                    <p className="text-[#647067]">Round-trip latency from sensor detection to dashboard update measured at 240ms.</p>
+                    <p className="text-[#647067]">End-to-end round trip from physical trigger to dashboard notification measured at 260ms.</p>
                   </div>
                   <div className="p-3.5 rounded-xl bg-white border border-[#E2E8E4] space-y-1">
-                    <span className="font-bold text-[#087443]">3. 48-Hour Continuous Stress Test</span>
-                    <p className="text-[#647067]">Zero memory leaks detected; ESP32 heap remained stable at 182KB free memory.</p>
+                    <span className="font-bold text-[#087443]">3. 48-Hour Continuous Soak Test</span>
+                    <p className="text-[#647067]">Zero memory leaks detected; internal heap memory maintained stability.</p>
                   </div>
                   <div className="p-3.5 rounded-xl bg-white border border-[#E2E8E4] space-y-1">
-                    <span className="font-bold text-[#087443]">4. Environmental Variance</span>
-                    <p className="text-[#647067]">Calibrated across ambient temperatures 20°C to 42°C with precision drift within ±1.5%.</p>
+                    <span className="font-bold text-[#087443]">4. Fail-Safe Auto Recovery</span>
+                    <p className="text-[#647067]">Simulated Wi-Fi router drop; node cached packets locally and flushed once connection re-established.</p>
                   </div>
                 </div>
               </div>
@@ -599,22 +828,22 @@ void loop() {
             {/* Results */}
             {activeTab === 'Results' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-bold text-[#17211B]">Experimental Results & Impact</h3>
+                <h3 className="text-xl font-bold text-[#17211B]">Experimental Performance & Impact</h3>
                 <p className="text-xs sm:text-sm text-[#647067] leading-relaxed">
-                  During live testing, the automated system reduced search latency by 72% and decreased manual tracking overhead to zero. The modular architecture enables rapid adaptation to other IoT telemetry applications.
+                  During live testing, the automated prototype eliminated human response delay by 74% and logged 100% of anomalous state fluctuations.
                 </p>
                 <div className="grid grid-cols-3 gap-3 p-4 rounded-xl bg-[#F8FAF9] border border-[#E2E8E4] text-center font-mono">
                   <div>
-                    <div className="text-xl font-bold text-[#087443]">72%</div>
-                    <div className="text-[10px] text-[#647067] uppercase mt-0.5">Time Saved</div>
+                    <div className="text-xl font-bold text-[#087443]">74%</div>
+                    <div className="text-[10px] text-[#647067] uppercase mt-0.5">Latency Reduction</div>
                   </div>
                   <div className="border-x border-[#E2E8E4]">
-                    <div className="text-xl font-bold text-[#087443]">99.4%</div>
+                    <div className="text-xl font-bold text-[#087443]">99.8%</div>
                     <div className="text-[10px] text-[#647067] uppercase mt-0.5">Uptime</div>
                   </div>
                   <div>
-                    <div className="text-xl font-bold text-[#087443]">₹3.8k</div>
-                    <div className="text-[10px] text-[#647067] uppercase mt-0.5">Total BOM</div>
+                    <div className="text-xl font-bold text-[#087443]">100%</div>
+                    <div className="text-[10px] text-[#647067] uppercase mt-0.5">Verified Schematics</div>
                   </div>
                 </div>
               </div>
@@ -623,12 +852,12 @@ void loop() {
             {/* Gallery */}
             {activeTab === 'Gallery' && (
               <div className="space-y-4">
-                <h3 className="text-xl font-bold text-[#17211B]">Prototype Visual Gallery</h3>
+                <h3 className="text-xl font-bold text-[#17211B]">Visual Product & Architecture Gallery</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {['overview', 'hardware', 'dashboard'].map((item) => (
                     <div key={item} className="rounded-xl overflow-hidden border border-[#E2E8E4] bg-[#F8FAF9] aspect-[4/3]">
                       <img
-                        src={`/projects/${project.slug}/${item}.webp`}
+                        src={`/projects/smart-parking-system/${item}.webp`}
                         alt={`${item} preview`}
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -645,79 +874,136 @@ void loop() {
           </div>
         </div>
 
-        {/* ── 3. SKILLS YOU'LL LEARN & TEAM ROLES ─────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          {/* What you'll learn */}
-          <div className="ha-card p-6 sm:p-8 rounded-2xl bg-white border border-[#E2E8E4] space-y-4">
-            <div className="flex items-center gap-2 text-[#087443] font-mono text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-4 h-4 text-[#84CC16]" />
-              <span>Skills Matrix</span>
-            </div>
-            <h3 className="text-lg font-bold text-[#17211B]">What You'll Learn</h3>
-            <div className="space-y-2.5">
-              {skillsList.map((skill, idx) => (
-                <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-[#17211B]">
-                  <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0 mt-0.5" />
-                  <span>{skill}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Team Roles */}
-          <div className="ha-card p-6 sm:p-8 rounded-2xl bg-white border border-[#E2E8E4] space-y-4">
-            <div className="flex items-center gap-2 text-[#087443] font-mono text-xs font-bold uppercase tracking-wider">
-              <Users className="w-4 h-4" />
-              <span>Collaborative Allocation</span>
-            </div>
-            <h3 className="text-lg font-bold text-[#17211B]">Team Member Responsibilities</h3>
-            <div className="space-y-2.5">
-              {teamRoles.map((tr, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-[#F8FAF9] border border-[#E2E8E4] text-xs">
-                  <span className="font-bold text-[#087443] block">{tr.role}</span>
-                  <span className="text-[#647067] mt-0.5 block">{tr.tasks}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── 4. RELATED / RECOMMENDED PROJECTS ───────────────────────────────────── */}
-        <div className="pt-8 border-t border-[#E2E8E4]">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-xl sm:text-2xl font-black text-[#17211B]">Recommended Projects</h3>
-              <p className="text-xs text-[#647067] mt-0.5">Similar engineering systems in {deptCode} and related disciplines.</p>
-            </div>
-            <Link href="/projects" className="text-xs font-bold text-[#087443] hover:underline flex items-center gap-1">
-              <span>View all projects</span>
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {relatedProjects.map((p) => (
-              <div key={p.id} className="ha-card p-4 rounded-2xl bg-white border border-[#E2E8E4] flex flex-col justify-between">
-                <div>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-[#087443] border border-emerald-200">
-                    {p.branch[0]}
-                  </span>
-                  <h4 className="text-sm font-bold text-[#17211B] mt-2 line-clamp-1">{p.title}</h4>
-                  <p className="text-xs text-[#647067] mt-1 line-clamp-2">{p.tagline}</p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#E2E8E4] flex items-center justify-between text-xs">
-                  <span className="font-mono text-[#647067]">{p.duration}</span>
-                  <Link href={`/projects/${p.slug}`} className="font-bold text-[#087443] hover:underline flex items-center gap-1">
-                    <span>View Project</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
       </div>
+
+      {/* ── CHECKOUT & PURCHASE MODAL ────────────────────────────────────────────── */}
+      {checkoutModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-[#E2E8E4] max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl animate-fade-slide-up">
+            <div className="flex items-center justify-between border-b border-[#E2E8E4] pb-4">
+              <div>
+                <span className="text-[10px] font-mono font-bold text-[#087443] uppercase tracking-wider">
+                  Secure Academic Checkout
+                </span>
+                <h3 className="text-lg font-bold text-[#17211B] mt-0.5">{project.title}</h3>
+              </div>
+              <button
+                onClick={() => setCheckoutModalOpen(false)}
+                className="text-slate-400 hover:text-[#17211B] p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Base item */}
+            <div className="p-3.5 rounded-xl bg-[#F8FAF9] border border-[#E2E8E4] flex items-center justify-between text-xs">
+              <div>
+                <strong className="text-[#17211B] block">Complete Project Blueprint & Source Code Pack</strong>
+                <span className="text-[#647067] text-[11px]">Full code, PCB, IEEE DOCX report, PPT, and viva bank</span>
+              </div>
+              <span className="font-mono font-bold text-[#087443] text-sm">₹{basePrice.toLocaleString('en-IN')}</span>
+            </div>
+
+            {/* Optional Add-ons */}
+            <div>
+              <label className="block text-xs font-bold text-[#17211B] mb-2 font-mono uppercase">
+                Optional Support Add-ons:
+              </label>
+              <div className="space-y-2">
+                {addonOptions.map((addon) => {
+                  const isSelected = selectedAddons.includes(addon.id);
+                  return (
+                    <div
+                      key={addon.id}
+                      onClick={() => {
+                        setSelectedAddons((prev) =>
+                          isSelected ? prev.filter((id) => id !== addon.id) : [...prev, addon.id]
+                        );
+                      }}
+                      className={`p-3 rounded-xl border text-xs cursor-pointer transition-all flex items-center justify-between ${
+                        isSelected
+                          ? 'border-[#087443] bg-emerald-50/50'
+                          : 'border-[#E2E8E4] bg-white hover:border-[#087443]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          readOnly
+                          className="w-4 h-4 text-[#087443] rounded accent-[#087443]"
+                        />
+                        <span className="font-medium text-[#17211B]">{addon.label}</span>
+                      </div>
+                      <span className="font-mono font-bold text-[#087443]">+₹{addon.price}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Order Total & Complete Action */}
+            <div className="pt-3 border-t border-[#E2E8E4] space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#647067]">Total Amount:</span>
+                <span className="text-2xl font-black text-[#087443] font-mono">
+                  ₹{totalCheckoutPrice.toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <button
+                onClick={handleCompletePurchase}
+                className="w-full py-3.5 rounded-xl bg-[#087443] hover:bg-[#065331] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+              >
+                <Check className="w-4 h-4 text-[#84CC16]" />
+                <span>Verify Payment & Unlock Project Now</span>
+              </button>
+
+              <div className="flex items-center justify-center gap-2 text-[11px] text-[#647067]">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#087443]" />
+                <span>Instant digital access + simulated GST tax receipt generated</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── VIDEO DEMO MODAL ────────────────────────────────────────────────────── */}
+      {demoModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-[#E2E8E4] max-w-2xl w-full p-6 space-y-4 shadow-2xl animate-fade-slide-up">
+            <div className="flex items-center justify-between border-b border-[#E2E8E4] pb-3">
+              <div className="flex items-center gap-2">
+                <Play className="w-4 h-4 text-[#087443] fill-[#087443]" />
+                <h3 className="text-base font-bold text-[#17211B]">{project.title} — Working Prototype Demo</h3>
+              </div>
+              <button onClick={() => setDemoModalOpen(false)} className="text-slate-400 hover:text-[#17211B]">
+                ✕
+              </button>
+            </div>
+
+            <div className="aspect-video bg-[#17211B] rounded-2xl flex flex-col items-center justify-center text-center p-6 space-y-3">
+              <div className="w-14 h-14 rounded-full bg-[#087443] text-white flex items-center justify-center shadow-xl animate-pulse">
+                <Play className="w-6 h-6 fill-white ml-1" />
+              </div>
+              <div className="text-white font-bold text-sm">Working Prototype Hardware Telemetry Walkthrough</div>
+              <p className="text-xs text-slate-400 max-w-md">
+                Demonstrates real-time sensor triggering, ESP32 packet transmission, and cloud dashboard heatmap synchronization.
+              </p>
+            </div>
+
+            <div className="pt-2 flex items-center justify-end">
+              <button
+                onClick={() => setDemoModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-[#F1F5F3] text-xs font-bold text-[#17211B]"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
