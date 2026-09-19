@@ -4,6 +4,16 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type UserRole = 'visitor' | 'buyer' | 'builder' | 'admin';
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'buyer' | 'builder' | 'admin';
+  college?: string;
+  avatar?: string;
+  phone?: string;
+}
+
 export interface ActiveProjectItem {
   projectId: string;
   progress: number;
@@ -20,6 +30,11 @@ export interface OrderItem {
   date: string;
   status: 'Completed' | 'Processing';
   addons: string[];
+  studentName?: string;
+  studentEmail?: string;
+  studentPhone?: string;
+  college?: string;
+  paymentMethod?: string;
 }
 
 export interface BuilderProjectItem {
@@ -37,9 +52,42 @@ export interface BuilderProjectItem {
   adminNotes?: string;
 }
 
+export const SEED_USERS: Record<string, User> = {
+  student: {
+    id: 'usr-student-1',
+    name: 'Ajith Kumar',
+    email: 'ajith@student.halabs.tech',
+    role: 'buyer',
+    college: 'Anna University (CEG)',
+    phone: '+91 8778954899',
+    avatar: 'AK',
+  },
+  builder: {
+    id: 'usr-builder-1',
+    name: 'Harish Kumar',
+    email: 'harish@builder.halabs.tech',
+    role: 'builder',
+    college: 'PSG College of Technology',
+    phone: '+91 9342540464',
+    avatar: 'HK',
+  },
+  admin: {
+    id: 'usr-admin-1',
+    name: 'HA Labs Core Admin',
+    email: 'admin@halabs.tech',
+    role: 'admin',
+    college: 'HA Labs HQ',
+    phone: '+91 8778954899',
+    avatar: 'HA',
+  },
+};
+
 interface ProjectStoreContextType {
+  currentUser: User | null;
   currentRole: UserRole;
-  setRole: (role: UserRole) => void;
+  login: (email: string, role?: 'buyer' | 'builder' | 'admin') => boolean;
+  logout: () => void;
+  register: (name: string, email: string, role: 'buyer' | 'builder', college?: string, phone?: string) => void;
   savedProjectIds: string[];
   activeProjects: ActiveProjectItem[];
   purchasedProjectIds: string[];
@@ -49,7 +97,13 @@ interface ProjectStoreContextType {
   isProjectSaved: (projectId: string) => boolean;
   isProjectPurchased: (projectId: string) => boolean;
   startProject: (projectId: string, teamName?: string, role?: string) => void;
-  purchaseProject: (projectId: string, projectTitle: string, amount: number, addons?: string[]) => void;
+  purchaseProject: (
+    projectId: string,
+    projectTitle: string,
+    amount: number,
+    addons?: string[],
+    orderDetails?: { studentName?: string; studentEmail?: string; studentPhone?: string; college?: string; paymentMethod?: string }
+  ) => string;
   submitBuilderProject: (projectData: Partial<BuilderProjectItem>) => void;
   reviewProject: (projectId: string, decision: 'approve' | 'request_changes' | 'reject', notes?: string) => void;
   savedCount: number;
@@ -62,9 +116,10 @@ interface ProjectStoreContextType {
 const ProjectStoreContext = createContext<ProjectStoreContextType | undefined>(undefined);
 
 export function ProjectStoreProvider({ children }: { children: React.ReactNode }) {
-  const [currentRole, setCurrentRole] = useState<UserRole>('buyer');
+  // Default to student user for seamless demo, or read from localStorage
+  const [currentUser, setCurrentUser] = useState<User | null>(SEED_USERS.student);
   const [savedProjectIds, setSavedProjectIds] = useState<string[]>(['proj-ece-1', 'proj-eee-1']);
-  const [purchasedProjectIds, setPurchasedProjectIds] = useState<string[]>(['proj-ece-1']); // default purchased for demo
+  const [purchasedProjectIds, setPurchasedProjectIds] = useState<string[]>(['proj-ece-1']); // default purchased
   const [activeProjects, setActiveProjects] = useState<ActiveProjectItem[]>([
     {
       projectId: 'proj-ece-1',
@@ -84,13 +139,18 @@ export function ProjectStoreProvider({ children }: { children: React.ReactNode }
 
   const [orders, setOrders] = useState<OrderItem[]>([
     {
-      id: 'ORD-9428',
+      id: 'ORD-2026-9428',
       projectId: 'proj-ece-1',
       projectTitle: 'Smart Parking Occupancy & Guidance System',
       amount: 4999,
       date: '19 Sep 2026',
       status: 'Completed',
       addons: ['Viva Mentoring Package'],
+      studentName: 'Ajith Kumar',
+      studentEmail: 'ajith@student.halabs.tech',
+      studentPhone: '+91 8778954899',
+      college: 'Anna University (CEG)',
+      paymentMethod: 'UPI (Google Pay)',
     },
   ]);
 
@@ -140,14 +200,19 @@ export function ProjectStoreProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     try {
+      const storedUser = localStorage.getItem('halabs_current_user');
+      if (storedUser) {
+        setCurrentUser(JSON.parse(storedUser));
+      }
+
       const storedSaved = localStorage.getItem('halabs_saved_projects');
       if (storedSaved) setSavedProjectIds(JSON.parse(storedSaved));
 
       const storedPurchased = localStorage.getItem('halabs_purchased_projects');
       if (storedPurchased) setPurchasedProjectIds(JSON.parse(storedPurchased));
 
-      const storedRole = localStorage.getItem('halabs_current_role');
-      if (storedRole) setCurrentRole(storedRole as UserRole);
+      const storedOrders = localStorage.getItem('halabs_orders');
+      if (storedOrders) setOrders(JSON.parse(storedOrders));
     } catch (e) {}
   }, []);
 
@@ -158,13 +223,54 @@ export function ProjectStoreProvider({ children }: { children: React.ReactNode }
     }, 3500);
   };
 
-  const setRole = (role: UserRole) => {
-    setCurrentRole(role);
+  const login = (email: string, role?: 'buyer' | 'builder' | 'admin') => {
+    let targetUser: User | null = null;
+
+    if (email.includes('admin') || role === 'admin') {
+      targetUser = SEED_USERS.admin;
+    } else if (email.includes('builder') || role === 'builder') {
+      targetUser = SEED_USERS.builder;
+    } else {
+      targetUser = {
+        ...SEED_USERS.student,
+        email: email || SEED_USERS.student.email,
+      };
+    }
+
+    setCurrentUser(targetUser);
     try {
-      localStorage.setItem('halabs_current_role', role);
+      localStorage.setItem('halabs_current_user', JSON.stringify(targetUser));
     } catch (e) {}
-    showToast(`Switched view to: ${role.toUpperCase()}`);
+    showToast(`Signed in as ${targetUser.name} (${targetUser.role.toUpperCase()})`);
+    return true;
   };
+
+  const logout = () => {
+    setCurrentUser(null);
+    try {
+      localStorage.removeItem('halabs_current_user');
+    } catch (e) {}
+    showToast('Signed out successfully');
+  };
+
+  const register = (name: string, email: string, role: 'buyer' | 'builder', college = 'Engineering College', phone = '') => {
+    const newUser: User = {
+      id: `usr-${Date.now()}`,
+      name,
+      email,
+      role,
+      college,
+      phone,
+      avatar: name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || 'ST',
+    };
+    setCurrentUser(newUser);
+    try {
+      localStorage.setItem('halabs_current_user', JSON.stringify(newUser));
+    } catch (e) {}
+    showToast(`Account created! Welcome to HA Labs, ${name}`);
+  };
+
+  const currentRole: UserRole = currentUser ? currentUser.role : 'visitor';
 
   const toggleSaveProject = (projectId: string) => {
     setSavedProjectIds((prev) => {
@@ -202,7 +308,13 @@ export function ProjectStoreProvider({ children }: { children: React.ReactNode }
     });
   };
 
-  const purchaseProject = (projectId: string, projectTitle: string, amount: number, addons: string[] = []) => {
+  const purchaseProject = (
+    projectId: string,
+    projectTitle: string,
+    amount: number,
+    addons: string[] = [],
+    orderDetails?: { studentName?: string; studentEmail?: string; studentPhone?: string; college?: string; paymentMethod?: string }
+  ): string => {
     setPurchasedProjectIds((prev) => {
       if (!prev.includes(projectId)) {
         const updated = [...prev, projectId];
@@ -214,17 +326,30 @@ export function ProjectStoreProvider({ children }: { children: React.ReactNode }
       return prev;
     });
 
+    const newOrderId = `ORD-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+
     const newOrder: OrderItem = {
-      id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+      id: newOrderId,
       projectId,
       projectTitle,
       amount,
       date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
       status: 'Completed',
       addons,
+      studentName: orderDetails?.studentName || currentUser?.name || 'Student Buyer',
+      studentEmail: orderDetails?.studentEmail || currentUser?.email || 'student@halabs.tech',
+      studentPhone: orderDetails?.studentPhone || currentUser?.phone || '+91 8778954899',
+      college: orderDetails?.college || currentUser?.college || 'Anna University',
+      paymentMethod: orderDetails?.paymentMethod || 'UPI (FastPay)',
     };
 
-    setOrders((prev) => [newOrder, ...prev]);
+    setOrders((prev) => {
+      const updated = [newOrder, ...prev];
+      try {
+        localStorage.setItem('halabs_orders', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
 
     // Also add to active projects if not present
     setActiveProjects((prev) => {
@@ -234,7 +359,7 @@ export function ProjectStoreProvider({ children }: { children: React.ReactNode }
           {
             projectId,
             progress: 10,
-            teamName: 'Personal Capstone Team',
+            teamName: `${currentUser?.name || 'My'} Capstone Team`,
             role: 'Lead Developer',
             startDate: new Date().toISOString().split('T')[0],
           },
@@ -243,7 +368,8 @@ export function ProjectStoreProvider({ children }: { children: React.ReactNode }
       return prev;
     });
 
-    showToast('Payment verified! Project source code & PCB files unlocked 🎉');
+    showToast('Payment verified! Project deliverables & source code unlocked 🎉');
+    return newOrderId;
   };
 
   const submitBuilderProject = (projectData: Partial<BuilderProjectItem>) => {
@@ -289,8 +415,11 @@ export function ProjectStoreProvider({ children }: { children: React.ReactNode }
   return (
     <ProjectStoreContext.Provider
       value={{
+        currentUser,
         currentRole,
-        setRole,
+        login,
+        logout,
+        register,
         savedProjectIds,
         activeProjects,
         purchasedProjectIds,

@@ -284,13 +284,13 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
                     </p>
 
                     <div className="pt-2 flex flex-col gap-2">
-                      <a
-                        href="#unlocked-downloads"
+                      <Link
+                        href={`/account/projects/${project.id}`}
                         className="w-full py-3 px-4 rounded-xl bg-[#087443] hover:bg-[#065331] text-white font-bold text-xs text-center shadow-xs transition-all flex items-center justify-center gap-2"
                       >
                         <Download className="w-4 h-4 text-[#84CC16]" />
-                        <span>Open Download Workspace</span>
-                      </a>
+                        <span>Access Protected Deliverables Hub</span>
+                      </Link>
                       <Link
                         href="/setup"
                         className="w-full py-2.5 px-4 rounded-xl border border-[#E2E8E4] hover:border-[#087443] text-[#17211B] font-semibold text-xs text-center hover:bg-[#F8FAF9] transition-all"
@@ -319,13 +319,13 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
                     </div>
 
                     <div className="space-y-2 pt-2 border-t border-[#E2E8E4] text-xs">
-                      <button
-                        onClick={() => setCheckoutModalOpen(true)}
-                        className="w-full py-3.5 px-4 rounded-xl bg-[#087443] hover:bg-[#065331] text-white font-bold text-sm shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5"
+                      <Link
+                        href={`/checkout?projectId=${project.id}`}
+                        className="w-full py-3.5 px-4 rounded-xl bg-[#087443] hover:bg-[#065331] text-white font-bold text-sm shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5 text-center"
                       >
                         <CreditCard className="w-4 h-4 text-[#84CC16]" />
                         <span>Buy Project (₹{basePrice.toLocaleString('en-IN')})</span>
-                      </button>
+                      </Link>
 
                       <div className="grid grid-cols-2 gap-2 pt-1">
                         <button

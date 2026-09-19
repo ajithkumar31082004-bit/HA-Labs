@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from './Logo';
-import { useProjectStore, UserRole } from '@/context/ProjectStoreContext';
+import { useProjectStore } from '@/context/ProjectStoreContext';
 import {
   Search,
   Menu,
@@ -14,16 +14,14 @@ import {
   Layers,
   ChevronDown,
   Sparkles,
-  LayoutDashboard,
-  Cpu,
-  Terminal,
-  BookOpen,
   CheckCircle2,
   Wrench,
   ShieldCheck,
   ShoppingBag,
   User,
-  Hammer
+  Hammer,
+  LogOut,
+  FolderGit2
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -45,17 +43,17 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [deptDropdownOpen, setDeptDropdownOpen] = useState(false);
-  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const roleRef = useRef<HTMLDivElement | null>(null);
+  const userRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
 
   const {
     savedCount,
-    activeCount,
     purchasedCount,
-    currentRole,
-    setRole
+    currentUser,
+    logout,
   } = useProjectStore();
 
   useEffect(() => {
@@ -72,20 +70,22 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDeptDropdownOpen(false);
       }
-      if (roleRef.current && !roleRef.current.contains(event.target as Node)) {
-        setRoleDropdownOpen(false);
+      if (userRef.current && !userRef.current.contains(event.target as Node)) {
+        setUserDropdownOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const rolesList: { role: UserRole; label: string; desc: string; color: string }[] = [
-    { role: 'visitor', label: 'Visitor', desc: 'Public browsing & preview', color: 'bg-slate-100 text-slate-700' },
-    { role: 'buyer', label: 'Student / Buyer', desc: 'Purchased projects & downloads', color: 'bg-emerald-100 text-[#087443]' },
-    { role: 'builder', label: 'Project Builder', desc: 'Creator studio & sales payouts', color: 'bg-blue-100 text-blue-800' },
-    { role: 'admin', label: 'HA Labs Admin', desc: '8-point verification & catalog', color: 'bg-purple-100 text-purple-800' },
-  ];
+  const handleSignOut = () => {
+    logout();
+    setUserDropdownOpen(false);
+    router.push('/');
+  };
+
+  const isBuilderOrAdmin = currentUser?.role === 'builder' || currentUser?.role === 'admin';
+  const isAdmin = currentUser?.role === 'admin';
 
   return (
     <>
@@ -172,81 +172,41 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
                 <span>Services</span>
               </Link>
 
-              {/* Builder Studio Link */}
-              <Link
-                href="/builder"
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                  pathname === '/builder'
-                    ? 'text-[#087443] bg-[#087443]/10'
-                    : 'text-[#17211B] hover:text-[#087443] hover:bg-[#F8FAF9]'
-                }`}
-              >
-                <Hammer className="w-3 h-3 text-[#087443]" />
-                <span>Builder Studio</span>
-              </Link>
+              {/* Builder Studio Link (Visible to Builders and Admins) */}
+              {isBuilderOrAdmin && (
+                <Link
+                  href="/builder"
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                    pathname?.startsWith('/builder')
+                      ? 'text-[#087443] bg-[#087443]/10'
+                      : 'text-[#17211B] hover:text-[#087443] hover:bg-[#F8FAF9]'
+                  }`}
+                >
+                  <Hammer className="w-3 h-3 text-[#087443]" />
+                  <span>Builder Studio</span>
+                </Link>
+              )}
 
-              {/* Admin Link */}
-              <Link
-                href="/admin"
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                  pathname === '/admin'
-                    ? 'text-[#087443] bg-[#087443]/10'
-                    : 'text-[#17211B] hover:text-[#087443] hover:bg-[#F8FAF9]'
-                }`}
-              >
-                <ShieldCheck className="w-3 h-3 text-[#087443]" />
-                <span>Admin</span>
-              </Link>
+              {/* Admin Link (Only visible to authenticated Admins) */}
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                    pathname?.startsWith('/admin')
+                      ? 'text-[#087443] bg-[#087443]/10'
+                      : 'text-[#17211B] hover:text-[#087443] hover:bg-[#F8FAF9]'
+                  }`}
+                >
+                  <ShieldCheck className="w-3 h-3 text-[#087443]" />
+                  <span>Admin</span>
+                </Link>
+              )}
             </nav>
           </div>
 
-          {/* Right Side: Role Selector, Search, Account, Start Building */}
+          {/* Right Side: Search, Bookmarks, Account / Auth Profile */}
           <div className="hidden md:flex items-center gap-2.5">
             
-            {/* Multi-Role Quick Switcher */}
-            <div className="relative" ref={roleRef}>
-              <button
-                onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-[#E2E8E4] bg-white hover:border-[#087443] transition-all text-xs font-bold shadow-2xs"
-                title="Switch active viewing persona"
-              >
-                <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
-                <span className="text-[#647067] text-[11px]">Role:</span>
-                <span className="text-[#087443] capitalize">{currentRole}</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
-              </button>
-
-              {roleDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 w-64 rounded-2xl bg-white border border-[#E2E8E4] shadow-xl p-2 z-50 animate-fade-slide-down space-y-1">
-                  <div className="px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider text-[#647067]">
-                    Simulate Platform Role
-                  </div>
-                  {rolesList.map((r) => (
-                    <button
-                      key={r.role}
-                      onClick={() => {
-                        setRole(r.role);
-                        setRoleDropdownOpen(false);
-                      }}
-                      className={`w-full text-left p-2 rounded-xl transition-all flex items-center justify-between text-xs ${
-                        currentRole === r.role
-                          ? 'bg-emerald-50 text-[#087443] font-bold'
-                          : 'hover:bg-[#F8FAF9] text-[#17211B]'
-                      }`}
-                    >
-                      <div>
-                        <div className="font-bold">{r.label}</div>
-                        <div className="text-[10px] text-[#647067]">{r.desc}</div>
-                      </div>
-                      {currentRole === r.role && (
-                        <CheckCircle2 className="w-4 h-4 text-[#087443]" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Search Trigger */}
             <button
               onClick={onOpenSearch}
@@ -274,20 +234,110 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
               )}
             </Link>
 
-            {/* Buyer Account / My Projects */}
-            <Link
-              href="/account"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-[#17211B] hover:text-[#087443] hover:bg-[#F8FAF9] border border-[#E2E8E4] transition-all"
-              title="My Purchased Projects & Invoices"
-            >
-              <ShoppingBag className="w-3.5 h-3.5 text-[#087443]" />
-              <span>My Account</span>
-              {purchasedCount > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full bg-[#16A34A]/15 text-[#16A34A] text-[10px] font-bold">
-                  {purchasedCount}
-                </span>
-              )}
-            </Link>
+            {/* Authenticated User Menu vs Guest Buttons */}
+            {currentUser ? (
+              <div className="relative" ref={userRef}>
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl border border-[#E2E8E4] hover:border-[#087443] bg-white transition-all text-xs shadow-2xs"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#087443] to-[#16A34A] text-white font-bold text-xs flex items-center justify-center">
+                    {currentUser.avatar || currentUser.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="text-left hidden xl:block">
+                    <div className="font-bold text-[#17211B] leading-tight text-xs">{currentUser.name}</div>
+                    <div className="text-[10px] font-mono text-[#087443] uppercase tracking-wider font-semibold">
+                      {currentUser.role}
+                    </div>
+                  </div>
+                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                </button>
+
+                {userDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-64 rounded-2xl bg-white border border-[#E2E8E4] shadow-xl p-2 z-50 animate-fade-slide-down space-y-1">
+                    <div className="p-3 rounded-xl bg-[#F8FAF9] border border-[#E2E8E4] mb-1">
+                      <div className="font-bold text-xs text-[#17211B]">{currentUser.name}</div>
+                      <div className="text-[11px] text-[#647067] truncate">{currentUser.email}</div>
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
+                          currentUser.role === 'admin'
+                            ? 'bg-purple-100 text-purple-800'
+                            : currentUser.role === 'builder'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-emerald-100 text-[#087443]'
+                        }`}>
+                          {currentUser.role} account
+                        </span>
+                        {currentUser.college && (
+                          <span className="text-[10px] text-[#647067] truncate">{currentUser.college}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <Link
+                      href="/account"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 p-2 rounded-xl hover:bg-[#F8FAF9] text-xs font-semibold text-[#17211B]"
+                    >
+                      <ShoppingBag className="w-4 h-4 text-[#087443]" />
+                      <span>My Account & Downloads</span>
+                      {purchasedCount > 0 && (
+                        <span className="ml-auto px-1.5 py-0.2 rounded-full bg-emerald-50 text-[#087443] text-[10px] font-bold">
+                          {purchasedCount}
+                        </span>
+                      )}
+                    </Link>
+
+                    {isBuilderOrAdmin && (
+                      <Link
+                        href="/builder"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center gap-2 p-2 rounded-xl hover:bg-[#F8FAF9] text-xs font-semibold text-[#17211B]"
+                      >
+                        <Hammer className="w-4 h-4 text-[#087443]" />
+                        <span>Builder Studio Dashboard</span>
+                      </Link>
+                    )}
+
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center gap-2 p-2 rounded-xl hover:bg-[#F8FAF9] text-xs font-semibold text-[#17211B]"
+                      >
+                        <ShieldCheck className="w-4 h-4 text-[#087443]" />
+                        <span>Admin Console</span>
+                      </Link>
+                    )}
+
+                    <div className="pt-1 border-t border-[#E2E8E4]">
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-red-50 text-xs font-semibold text-red-700 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="px-3.5 py-1.5 rounded-xl border border-[#E2E8E4] hover:border-[#087443] text-xs font-bold text-[#17211B] transition-all"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/signup"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#087443] hover:bg-[#065331] text-white font-bold text-xs transition-all shadow-xs"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
 
             {/* Start Building CTA */}
             <Link
@@ -334,25 +384,35 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-[#E2E8E4] bg-white px-4 pt-3 pb-6 space-y-3 animate-fade-slide-down">
-            {/* Mobile Role Switcher */}
-            <div className="p-2.5 rounded-xl bg-[#F8FAF9] border border-[#E2E8E4] space-y-1.5">
-              <span className="text-[10px] font-mono font-bold uppercase text-[#647067]">Active Persona</span>
-              <div className="grid grid-cols-2 gap-1.5 text-xs font-bold">
-                {rolesList.map((r) => (
-                  <button
-                    key={r.role}
-                    onClick={() => setRole(r.role)}
-                    className={`py-1.5 px-2 rounded-lg border text-center capitalize transition-all ${
-                      currentRole === r.role
-                        ? 'bg-[#087443] text-white border-[#087443]'
-                        : 'bg-white border-[#E2E8E4] text-[#17211B]'
-                    }`}
-                  >
-                    {r.label}
-                  </button>
-                ))}
+            {/* User status in mobile */}
+            {currentUser ? (
+              <div className="p-3 rounded-xl bg-[#F8FAF9] border border-[#E2E8E4] flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-xs text-[#17211B]">{currentUser.name}</div>
+                  <div className="text-[10px] text-[#647067]">{currentUser.email}</div>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-[#087443] uppercase">
+                  {currentUser.role}
+                </span>
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="py-2 text-center rounded-xl border border-[#E2E8E4] text-xs font-bold text-[#17211B]"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="py-2 text-center rounded-xl bg-[#087443] text-white text-xs font-bold"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
 
             <div className="space-y-1 text-sm font-bold">
               <Link
@@ -369,13 +429,15 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
               >
                 Services Marketplace
               </Link>
-              <Link
-                href="/builder"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-lg text-[#17211B] hover:bg-[#F8FAF9]"
-              >
-                Builder Studio
-              </Link>
+              {isBuilderOrAdmin && (
+                <Link
+                  href="/builder"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-lg text-[#17211B] hover:bg-[#F8FAF9]"
+                >
+                  Builder Studio
+                </Link>
+              )}
               <Link
                 href="/account"
                 onClick={() => setMobileMenuOpen(false)}
@@ -383,13 +445,15 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
               >
                 My Account & Downloads ({purchasedCount})
               </Link>
-              <Link
-                href="/admin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-lg text-[#17211B] hover:bg-[#F8FAF9]"
-              >
-                HA Labs Admin
-              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-lg text-[#17211B] hover:bg-[#F8FAF9]"
+                >
+                  HA Labs Admin
+                </Link>
+              )}
             </div>
 
             <div className="pt-2 border-t border-[#E2E8E4]">
@@ -417,6 +481,17 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
               >
                 Start Building Project
               </Link>
+              {currentUser && (
+                <button
+                  onClick={() => {
+                    handleSignOut();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full text-center py-2 text-xs font-bold text-red-600 hover:underline"
+                >
+                  Sign Out
+                </button>
+              )}
             </div>
           </div>
         )}

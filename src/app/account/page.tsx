@@ -37,7 +37,7 @@ export default function BuyerAccountPage() {
     savedProjectIds,
     toggleSaveProject,
     currentRole,
-    setRole
+    currentUser,
   } = useProjectStore();
 
   const [activeTab, setActiveTab] = useState<AccountTab>('purchased');

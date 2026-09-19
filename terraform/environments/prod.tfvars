@@ -1,0 +1,11 @@
+aws_region             = "ap-south-1"
+environment            = "prod"
+project_name           = "ha-labs"
+domain_name            = "halabs.in"
+create_route53_zone    = true
+frontend_instance_type = "t3.small"
+backend_instance_type  = "t3.medium"
+enable_nat_gateway     = true
+allowed_ssh_cidr       = ["0.0.0.0/0"]
+db_name                = "halabs_production"
+db_user                = "halabs_admin"
