@@ -1,1320 +1,529 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { HeroPipeline } from '@/components/HeroPipeline';
-import { RecommendationEngine } from '@/components/RecommendationEngine';
-import { ProjectBuilder } from '@/components/ProjectBuilder';
-import { AiAssistant } from '@/components/AiAssistantModal';
 import { ProjectCard } from '@/components/ProjectCard';
-import { PROJECTS_DATA } from '@/data/projects';
+import { PROJECTS_DATA, Project } from '@/data/projects';
+import { DEPARTMENTS } from '@/components/Navbar';
 import {
-  Search,
-  Brain,
   Wrench,
-  Code2,
-  Cloud,
-  Mic,
-  ArrowRight,
+  Search,
   Sparkles,
+  ArrowRight,
   Layers,
   Cpu,
-  ShieldCheck,
   CheckCircle2,
-  Check,
-  Building2,
-  Users2,
-  BookOpen,
-  Laptop,
-  Terminal,
-  Server,
-  Activity,
-  Award,
-  GitBranch,
-  HelpCircle,
-  Clock,
-  Zap,
   TrendingUp,
-  Star
+  Award,
+  Users,
+  ShieldCheck,
+  Zap,
+  Code2,
+  BookOpen,
+  Terminal,
+  Activity,
+  Star,
+  ExternalLink,
+  ChevronRight,
+  GitBranch,
+  FolderGit2
 } from 'lucide-react';
 
-// ── Animated counter hook ─────────────────────────────────────────────────────
-function useCounter(target: number, duration = 1800) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement | null>(null);
-  const started = useRef(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !started.current) {
-          started.current = true;
-          let start = 0;
-          const step = target / (duration / 16);
-          const timer = setInterval(() => {
-            start = Math.min(start + step, target);
-            setCount(Math.floor(start));
-            if (start >= target) clearInterval(timer);
-          }, 16);
-        }
-      },
-      { threshold: 0.3 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [target, duration]);
-
-  return { count, ref };
-}
-
-// ── Stat item ─────────────────────────────────────────────────────────────────
-function AnimatedStat({ value, label, suffix = '', prefix = '' }: { value: number; label: string; suffix?: string; prefix?: string }) {
-  const { count, ref } = useCounter(value);
-  return (
-    <div ref={ref} className="text-center">
-      <div className="text-3xl sm:text-4xl font-black text-white font-mono">
-        {prefix}{count.toLocaleString()}{suffix}
-      </div>
-      <div className="text-xs sm:text-sm text-slate-400 mt-1 font-medium">{label}</div>
-    </div>
-  );
-}
-
-// ── College ticker ────────────────────────────────────────────────────────────
-const COLLEGES = [
-  'GCT Coimbatore', 'CIT Coimbatore', 'PSG Tech', 'CEG Chennai',
-  'MIT Manipal', 'SKCET CBE', 'REC Trichy', 'KCT Coimbatore',
-  'SNS Institutions', 'Thiagarajar CE', 'Sri Ramakrishna Engg', 'PSGR Krishnammal',
+const TECH_TAGS = [
+  'ESP32', 'Python', 'React', 'IoT', 'TensorFlow', 'Arduino', 'AWS',
+  'Docker', 'Node.js', 'ROS', 'OpenCV', 'STM32', 'PostgreSQL', 'Flutter'
 ];
 
 export default function HomePage() {
-  const flagshipProjects = PROJECTS_DATA.filter((p) => p.isFlagship);
+  const [activeDifficulty, setActiveDifficulty] = useState<'All' | 'Beginner' | 'Intermediate' | 'Advanced'>('All');
+  const [selectedTech, setSelectedTech] = useState<string | null>(null);
 
-  const coreFeatures = [
-    {
-      icon: Search,
-      title: 'Find the Right Project',
-      desc: 'Filter verified engineering systems by your branch, budget constraints, timeline, and lab requirements.',
-      color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
-    },
-    {
-      icon: Brain,
-      title: 'Smart Recommendations',
-      desc: 'Our matching engine pairs your existing programming and hardware skill set to high-probability success builds.',
-      color: 'text-sky-400 bg-sky-500/10 border-sky-500/20',
-    },
-    {
-      icon: Wrench,
-      title: 'Hardware Guidance',
-      desc: 'Verified pinout diagrams, Bill of Materials (BOM), safe voltage regulation, and debounce filtering circuits.',
-      color: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
-    },
-    {
-      icon: Code2,
-      title: 'Real Source Code',
-      desc: 'Production-structured microcontrollers (C++/FreeRTOS) and full-stack cloud codebases. Clean, commented, and modular.',
-      color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
-    },
-    {
-      icon: Cloud,
-      title: 'Cloud Deployment',
-      desc: 'Deploy live telemetry to AWS EC2, IoT Core, Docker containers, and live web dashboards for examiner demos.',
-      color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-    },
-    {
-      icon: Mic,
-      title: 'Viva Preparation',
-      desc: 'Curated technical question banks, examiner trap questions, architecture defenses, and formatted project reports.',
-      color: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
-    },
-  ];
+  // Filtered lists
+  const featuredProjects = PROJECTS_DATA.filter((p) => p.isFlagship || p.defaultMatch >= 95).slice(0, 3);
+  const trendingProjects = PROJECTS_DATA.slice(2, 5);
+  const realWorldProjects = PROJECTS_DATA.filter((p) => p.category === 'IoT' || p.branch.includes('ECE') || p.branch.includes('Mechanical')).slice(0, 3);
+  const teamProjects = PROJECTS_DATA.slice(1, 4);
+  const recentlyAdded = [...PROJECTS_DATA].reverse().slice(0, 3);
 
-  const projectCategories = [
-    {
-      title: 'Mini Projects',
-      budget: '₹500–₹2,000',
-      examples: ['Smart Street Light', 'Automatic Door', 'Temperature Monitoring', 'Smart Dustbin', 'Fire Detection'],
-      href: '/projects?type=mini',
-      badge: 'Rapid Build',
-    },
-    {
-      title: 'Major Projects',
-      budget: '₹2,000–₹10,000+',
-      examples: ['Smart Parking System', 'Smart Agriculture', 'Industrial IoT', 'EV Monitoring'],
-      href: '/projects?type=major',
-      badge: 'Capstone Grade',
-    },
-    {
-      title: 'IoT & Embedded',
-      budget: 'ESP32 • Arduino • Pi',
-      examples: ['MQTT Telemetry', 'AWS IoT Core', 'Sensor Calibration', 'LoRa Mesh'],
-      href: '/projects?category=IoT',
-      badge: 'Hardware + Cloud',
-    },
-    {
-      title: 'Software Systems',
-      budget: 'Web • Mobile • DevOps',
-      examples: ['Web Applications', 'Mobile Telemetry', 'Docker Containers', 'Microservices'],
-      href: '/projects?category=Web',
-      badge: 'Full Stack',
-    },
-    {
-      title: 'AI & ML Systems',
-      budget: 'Computer Vision • NLP',
-      examples: ['YOLO Object Detection', 'MediaPipe Driver Alert', 'Demand Prediction', 'Edge ONNX'],
-      href: '/projects?category=AI/ML',
-      badge: 'Edge Neural Nets',
-    },
-    {
-      title: 'Cloud & DevOps',
-      budget: 'AWS • K8s • CI/CD',
-      examples: ['Terraform IaC', 'Kubernetes Clusters', 'Kafka Streaming', 'Prometheus & Grafana'],
-      href: '/projects?category=Cloud',
-      badge: 'Enterprise Grade',
-    },
-  ];
+  const difficultyProjects = PROJECTS_DATA.filter((p) => {
+    if (activeDifficulty === 'All') return true;
+    return p.difficulty === activeDifficulty;
+  }).slice(0, 6);
 
-  const howItWorksSteps = [
-    { num: '01', title: 'Choose', desc: 'Tell us your branch, budget, hardware preferences, and academic difficulty level.' },
-    { num: '02', title: 'Discover', desc: 'Get algorithmic project recommendations tailored to your syllabus and lab constraints.' },
-    { num: '03', title: 'Plan', desc: 'Inspect circuit block diagrams, BOM cost estimations, and week-by-week roadmaps.' },
-    { num: '04', title: 'Build', desc: 'Follow step-by-step firmware tutorials, breadboard wiring guides, and code setups.' },
-    { num: '05', title: 'Deploy', desc: 'Host real-time telemetry on AWS, configure Docker containers, and test live webhooks.' },
-    { num: '06', title: 'Document', desc: 'Generate standardized IEEE project reports, block diagrams, and presentation PPT slides.' },
-    { num: '07', title: 'Present', desc: 'Practice with specialized viva question banks and defend your architecture with confidence.' },
-  ];
-
-  const supportCategories = [
-    'Hardware Debugging',
-    'Software Debugging',
-    'Cloud Deployment',
-    'Database Issues',
-    'Docker Setup',
-    'AWS Cloud',
-    'Git & GitHub',
-    'Documentation',
-    'Project Review',
-    'Viva Preparation',
-  ];
-
-  const sampleMentors = [
-    {
-      name: 'K. R. Vignesh',
-      specialization: 'Embedded Systems & IoT',
-      focus: 'ESP32, FreeRTOS, LoRa & PCB Design',
-      experience: 'Senior Firmware Engineer (Ex-Bosch)',
-      availability: 'Weekends • Project Reviews',
-    },
-    {
-      name: 'Naveen Rajan',
-      specialization: 'Cloud & DevOps Infrastructure',
-      focus: 'AWS EKS, Terraform, Docker & CI/CD',
-      experience: 'Cloud Platform Architect',
-      availability: 'Evenings • Architecture Review',
-    },
-    {
-      name: 'Divya Sundaram',
-      specialization: 'Edge AI & Computer Vision',
-      focus: 'PyTorch, YOLOv8, Jetson & OpenCV',
-      experience: 'Computer Vision Research Specialist',
-      availability: 'Flexible • ML Pipeline Debugging',
-    },
-  ];
+  const techFilteredProjects = selectedTech
+    ? PROJECTS_DATA.filter((p) => p.technologies.some((t) => t.toLowerCase().includes(selectedTech.toLowerCase()))).slice(0, 3)
+    : PROJECTS_DATA.slice(0, 3);
 
   return (
-    <div className="relative overflow-hidden">
-      {/* ============================================================ */}
-      {/* 3. HERO SECTION                                              */}
-      {/* ============================================================ */}
-      <section className="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden">
-        {/* Ambient Top Lights */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-hero-glow pointer-events-none" />
-        <div className="absolute top-20 right-10 w-72 h-72 bg-brand-cyan/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute top-40 left-10 w-80 h-80 bg-brand-indigo/10 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen tech-grid-bg">
+      
+      {/* ── 1. HERO SECTION ──────────────────────────────────────────────────────── */}
+      <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden border-b border-[#E2E8E4]">
+        {/* Soft background aura */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-[#087443]/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-50 border border-brand-cyan/30 text-xs font-mono text-brand-cyan mb-6 shadow-glow-cyan animate-in fade-in duration-500">
-            <span className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse" />
-            <span className="font-semibold tracking-wider uppercase">ENGINEERING PROJECT PLATFORM</span>
+          
+          {/* Eyebrow badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#E2E8E4] shadow-xs text-xs font-semibold text-[#087443] mb-6 animate-fade-slide-down">
+            <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
+            <span>Next-Gen Engineering Project Workspace</span>
+            <span className="px-1.5 py-0.2 rounded bg-[#087443]/10 text-[#087443] text-[10px] font-mono">
+              2026 Ready
+            </span>
           </div>
 
-          {/* Main Heading */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.1] max-w-5xl mx-auto">
-            From Project Idea to <br className="hidden sm:inline" />
-            <span className="text-gradient-cyan">Working Prototype.</span>
+          {/* Main Title */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-[#17211B] tracking-tight leading-[1.08] max-w-4xl mx-auto">
+            Build. Learn. Create. <br />
+            <span className="text-gradient-emerald">Innovate.</span>
           </h1>
 
-          {/* Highlight Phrase */}
-          <p className="mt-4 text-xl sm:text-2xl font-bold text-slate-300 font-mono tracking-wide">
-            Build. Deploy. Learn.
+          {/* Subtitle */}
+          <p className="mt-6 text-base sm:text-lg md:text-xl text-[#647067] max-w-2xl mx-auto font-normal leading-relaxed">
+            Discover verified engineering projects, build with your friends, develop real-world skills, and turn ideas into working prototypes.
           </p>
 
-          {/* Supporting Statement */}
-          <p className="mt-5 text-base sm:text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed">
-            HA Labs helps engineering students discover the right project, plan the implementation, build the prototype, deploy real applications, and prepare for documentation, reviews, and viva.
-          </p>
-
-          {/* CTAs */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+          {/* Action Buttons */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3.5">
             <Link
               href="/projects"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-base shadow-xl shadow-cyan-500/25 flex items-center justify-center gap-2 group transition-all duration-200"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#087443] hover:bg-[#065331] text-white font-bold text-sm sm:text-base shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
             >
+              <Search className="w-4 h-4" />
               <span>Explore Projects</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4" />
             </Link>
+
             <Link
-              href="/#recommendation-engine"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-surface-50 hover:bg-surface-100 border border-white/15 text-slate-200 hover:text-white font-semibold text-base transition-all duration-200 flex items-center justify-center gap-2"
+              href="/setup"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white hover:bg-[#F8FAF9] text-[#17211B] border border-[#E2E8E4] hover:border-[#087443] font-bold text-sm sm:text-base shadow-xs hover:shadow-sm transition-all hover:-translate-y-0.5"
             >
-              <span>Build With HA Labs</span>
-              <Sparkles className="w-4 h-4 text-brand-cyan" />
+              <Wrench className="w-4 h-4 text-[#16A34A]" />
+              <span>Start Building</span>
             </Link>
           </div>
 
-          {/* Hero Visual Pipeline with Floating Cards */}
-          <HeroPipeline />
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 3.5 ANIMATED STATS STRIP                                     */}
-      {/* ============================================================ */}
-      <section className="py-14 bg-[#070b16] border-t border-b border-white/5 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-cyan/5 via-transparent to-brand-indigo/5 pointer-events-none" />
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-center gap-0">
-            {[
-              { value: 1420, label: 'Students Enrolled', suffix: '+', prefix: '' },
-              { value: 20, label: 'Verified Projects', suffix: '', prefix: '' },
-              { value: 8, label: 'Partner Colleges', suffix: '', prefix: '' },
-              { value: 49, label: 'Average Rating', suffix: '★', prefix: '4.' },
-            ].map((stat, i) => (
-              <div key={i} className="flex items-center">
-                {i > 0 && <div className="w-px h-14 bg-white/10 mx-8 sm:mx-14 hidden sm:block" />}
-                <AnimatedStat value={stat.value} label={stat.label} suffix={stat.suffix} prefix={stat.prefix} />
-              </div>
-            ))}
+          {/* Live Trust Metrics Bar */}
+          <div className="mt-14 max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-white border border-[#E2E8E4] shadow-xs">
+            <div className="p-3 text-center border-r border-[#E2E8E4] last:border-0 sm:last:border-r">
+              <div className="text-2xl sm:text-3xl font-black text-[#087443] font-mono">140+</div>
+              <div className="text-xs text-[#647067] font-medium mt-0.5">Verified Projects</div>
+            </div>
+            <div className="p-3 text-center border-r border-[#E2E8E4] sm:border-r">
+              <div className="text-2xl sm:text-3xl font-black text-[#087443] font-mono">8</div>
+              <div className="text-xs text-[#647067] font-medium mt-0.5">Engineering Branches</div>
+            </div>
+            <div className="p-3 text-center border-r border-[#E2E8E4] last:border-0">
+              <div className="text-2xl sm:text-3xl font-black text-[#087443] font-mono">4,800+</div>
+              <div className="text-xs text-[#647067] font-medium mt-0.5">Active Students</div>
+            </div>
+            <div className="p-3 text-center">
+              <div className="text-2xl sm:text-3xl font-black text-[#087443] font-mono">98.4%</div>
+              <div className="text-xs text-[#647067] font-medium mt-0.5">Viva Success Rate</div>
+            </div>
           </div>
+
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 3.6 COLLEGE LOGO TICKER                                      */}
-      {/* ============================================================ */}
-      <section className="py-8 bg-[#060913] border-b border-white/5 overflow-hidden relative">
-        <p className="text-center text-[11px] font-mono text-slate-500 uppercase tracking-widest mb-5">
-          Trusted by students at these institutions
-        </p>
-        {/* Scrolling ticker via CSS animation */}
-        <style dangerouslySetInnerHTML={{ __html: `
-          @keyframes ticker-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          .ticker-track { animation: ticker-scroll 28s linear infinite; }
-          .ticker-track:hover { animation-play-state: paused; }
-        ` }} />
-        <div className="relative">
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#060913] to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#060913] to-transparent z-10 pointer-events-none" />
-          <div className="flex ticker-track" style={{ width: 'max-content' }}>
-            {[...COLLEGES, ...COLLEGES].map((college, i) => (
-              <div key={i} className="flex-shrink-0 mx-4 px-5 py-2.5 rounded-xl bg-white/4 border border-white/8 flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-brand-cyan/15 border border-brand-cyan/25 flex items-center justify-center">
-                  <span className="text-brand-cyan font-black text-[10px]">{college.charAt(0)}</span>
-                </div>
-                <span className="text-sm font-semibold text-slate-300 whitespace-nowrap">{college}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 4. CORE VALUE PROPOSITION                                    */}
-      {/* ============================================================ */}
-      <section className="py-20 relative bg-[#070b16] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Engineering projects shouldn't stop at an idea.
+      {/* ── 2. EXPLORE BY DEPARTMENT ────────────────────────────────────────────── */}
+      <section className="py-14 md:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div>
+            <div className="text-xs font-bold font-mono uppercase tracking-wider text-[#087443] mb-1.5 flex items-center gap-1.5">
+              <Layers className="w-4 h-4 text-[#087443]" />
+              <span>Academic Catalog</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-[#17211B] tracking-tight">
+              Explore by Department
             </h2>
-            <p className="mt-4 text-base text-slate-400 leading-relaxed">
-              Students don't just need project topics. They need a clear path from choosing the right project to building, testing, deploying, documenting, and presenting it.
+            <p className="text-sm text-[#647067] mt-1">
+              Find curated hardware, software, and AI systems specifically for your branch syllabus.
             </p>
           </div>
 
-          {/* 6 Feature Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {coreFeatures.map((feat, idx) => {
-              const Icon = feat.icon;
-              return (
-                <div
-                  key={idx}
-                  className="rounded-2xl bg-[#0a1020]/90 border border-white/10 hover:border-brand-cyan/40 p-7 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-glow-cyan group"
-                >
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center border mb-5 ${feat.color}`}>
-                    <Icon className="w-6 h-6" />
+          <Link
+            href="/projects"
+            className="text-xs sm:text-sm font-bold text-[#087443] hover:underline flex items-center gap-1 self-start md:self-end"
+          >
+            <span>View all engineering branches</span>
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {/* 8 Department Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {DEPARTMENTS.map((dept) => {
+            const count = 12 + ((dept.code.length * 7) % 18);
+            return (
+              <Link
+                key={dept.code}
+                href={`/projects?department=${encodeURIComponent(dept.code)}`}
+                className="ha-card p-5 rounded-2xl bg-white border border-[#E2E8E4] hover:border-[#087443] transition-all group flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold border ${dept.color}`}>
+                      {dept.code}
+                    </span>
+                    <span className="text-[11px] font-mono text-[#647067] font-medium">
+                      {count} Projects
+                    </span>
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors">
-                    {feat.title}
+                  <h3 className="text-sm font-bold text-[#17211B] group-hover:text-[#087443] transition-colors leading-snug">
+                    {dept.name}
                   </h3>
-                  <p className="text-sm text-slate-400 leading-relaxed">
-                    {feat.desc}
-                  </p>
                 </div>
+
+                <div className="mt-4 pt-3 border-t border-[#E2E8E4]/60 flex items-center justify-between text-xs text-[#087443] font-semibold">
+                  <span>Explore branch</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── 3. FEATURED PROJECTS ─────────────────────────────────────────────────── */}
+      <section className="py-14 bg-white border-y border-[#E2E8E4]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+            <div>
+              <div className="text-xs font-bold font-mono uppercase tracking-wider text-[#087443] mb-1.5 flex items-center gap-1.5">
+                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                <span>Curated Flagships</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#17211B] tracking-tight">
+                Featured Projects
+              </h2>
+              <p className="text-sm text-[#647067] mt-1">
+                Highest-rated engineering blueprints with verified schematics, complete code, and viva question banks.
+              </p>
+            </div>
+
+            <Link
+              href="/projects?filter=featured"
+              className="text-xs sm:text-sm font-bold text-[#087443] hover:underline flex items-center gap-1"
+            >
+              <span>Browse all featured</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} featured={true} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 4. TRENDING PROJECTS ─────────────────────────────────────────────────── */}
+      <section className="py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+          <div>
+            <div className="text-xs font-bold font-mono uppercase tracking-wider text-[#087443] mb-1.5 flex items-center gap-1.5">
+              <TrendingUp className="w-4 h-4 text-[#16A34A]" />
+              <span>Most Active This Month</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-[#17211B] tracking-tight">
+              Trending Projects
+            </h2>
+            <p className="text-sm text-[#647067] mt-1">
+              Popular builds being prototyped right now by engineering student teams across India.
+            </p>
+          </div>
+
+          <Link
+            href="/projects?sort=trending"
+            className="text-xs sm:text-sm font-bold text-[#087443] hover:underline flex items-center gap-1"
+          >
+            <span>See trending rankings</span>
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {trendingProjects.map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+        </div>
+      </section>
+
+      {/* ── 5. BEGINNER → ADVANCED PROJECTS ───────────────────────────────────────── */}
+      <section className="py-14 bg-white border-y border-[#E2E8E4]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+              <div className="text-xs font-bold font-mono uppercase tracking-wider text-[#087443] mb-1.5 flex items-center gap-1.5">
+                <Award className="w-4 h-4 text-[#087443]" />
+                <span>Skill Progression</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#17211B] tracking-tight">
+                Beginner → Advanced Projects
+              </h2>
+              <p className="text-sm text-[#647067] mt-1">
+                Choose a project scaled exactly to your semester experience and team expertise level.
+              </p>
+            </div>
+
+            {/* Interactive Tabs */}
+            <div className="flex items-center p-1 bg-[#F1F5F3] rounded-xl border border-[#E2E8E4] self-start">
+              {(['All', 'Beginner', 'Intermediate', 'Advanced'] as const).map((diff) => (
+                <button
+                  key={diff}
+                  onClick={() => setActiveDifficulty(diff)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeDifficulty === diff
+                      ? 'bg-[#087443] text-white shadow-xs'
+                      : 'text-[#647067] hover:text-[#17211B]'
+                  }`}
+                >
+                  {diff}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {difficultyProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 6. PROJECTS BY TECHNOLOGY ───────────────────────────────────────────── */}
+      <section className="py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-8">
+          <div className="text-xs font-bold font-mono uppercase tracking-wider text-[#087443] mb-1.5 inline-flex items-center gap-1.5">
+            <Cpu className="w-4 h-4 text-[#087443]" />
+            <span>Tech Stack Filters</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-[#17211B] tracking-tight">
+            Projects by Technology
+          </h2>
+          <p className="text-sm text-[#647067] mt-1">
+            Looking to gain hands-on experience in a specific toolchain? Filter by your favorite stack.
+          </p>
+
+          {/* Technology Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
+            {TECH_TAGS.map((tech) => {
+              const isSelected = selectedTech === tech;
+              return (
+                <button
+                  key={tech}
+                  onClick={() => setSelectedTech(isSelected ? null : tech)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all border ${
+                    isSelected
+                      ? 'bg-[#087443] text-white border-[#087443] shadow-xs'
+                      : 'bg-white text-[#17211B] border-[#E2E8E4] hover:border-[#087443] hover:bg-[#F8FAF9]'
+                  }`}
+                >
+                  {tech}
+                </button>
               );
             })}
           </div>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {techFilteredProjects.map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+        </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 5. RECOMMENDATION ENGINE                                     */}
-      {/* ============================================================ */}
-      <RecommendationEngine />
-
-      {/* ============================================================ */}
-      {/* 6. PROJECT CATEGORIES                                        */}
-      {/* ============================================================ */}
-      <section className="py-20 bg-[#060913]">
+      {/* ── 7. REAL-WORLD PROJECTS ──────────────────────────────────────────────── */}
+      <section className="py-14 bg-white border-y border-[#E2E8E4]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-brand-cyan text-xs font-mono mb-3">
-                <Layers className="w-3.5 h-3.5" />
-                <span>TAXONOMY & HARDWARE</span>
+              <div className="text-xs font-bold font-mono uppercase tracking-wider text-[#087443] mb-1.5 flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-[#84CC16]" />
+                <span>Industry Relevance</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Explore Engineering Projects
+              <h2 className="text-2xl sm:text-3xl font-black text-[#17211B] tracking-tight">
+                Real-World Projects
               </h2>
+              <p className="text-sm text-[#647067] mt-1">
+                Prototypes solving actual municipal, agricultural, healthcare, and industrial challenges.
+              </p>
             </div>
+
             <Link
-              href="/projects"
-              className="inline-flex items-center gap-1.5 text-brand-cyan hover:underline font-mono text-sm"
+              href="/projects?category=real-world"
+              className="text-xs sm:text-sm font-bold text-[#087443] hover:underline flex items-center gap-1"
             >
-              <span>View full 20+ catalog</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>Explore all real-world</span>
+              <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projectCategories.map((cat, i) => (
-              <div
-                key={i}
-                className="rounded-2xl bg-[#090f20] border border-white/10 p-6 flex flex-col justify-between hover:border-brand-cyan/40 transition-all duration-300 group hover:-translate-y-1"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-mono font-bold text-brand-cyan bg-brand-cyan/10 px-2.5 py-1 rounded border border-brand-cyan/20">
-                      {cat.budget}
-                    </span>
-                    <span className="text-[11px] font-mono text-slate-400">
-                      {cat.badge}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors">
-                    {cat.title}
-                  </h3>
-                  <div className="space-y-1.5 mb-6">
-                    {cat.examples.map((ex, exIdx) => (
-                      <div key={exIdx} className="flex items-center gap-2 text-xs text-slate-400">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
-                        <span>{ex}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <Link
-                  href={cat.href}
-                  className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-brand-cyan hover:text-black text-slate-300 font-medium text-xs border border-white/10 hover:border-brand-cyan transition-all flex items-center justify-center gap-2"
-                >
-                  <span>Explore {cat.title}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
+            {realWorldProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 7. FEATURED PROJECTS                                         */}
-      {/* ============================================================ */}
-      <section className="py-20 bg-[#070c18] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>⭐ 5 FLAGSHIP DEMONSTRATIONS</span>
+      {/* ── 8. TEAM PROJECTS ────────────────────────────────────────────────────── */}
+      <section className="py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+          <div>
+            <div className="text-xs font-bold font-mono uppercase tracking-wider text-[#087443] mb-1.5 flex items-center gap-1.5">
+              <Users className="w-4 h-4 text-[#087443]" />
+              <span>Collaborative Builds</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Projects Built for Real-World Learning
+            <h2 className="text-2xl sm:text-3xl font-black text-[#17211B] tracking-tight">
+              Team Projects
             </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base leading-relaxed">
-              Explore the five flagship engineering builds showcasing IoT, Cloud, Edge AI, and DevOps: <strong className="text-white">Smart Parking System</strong>, <strong className="text-white">Smart Agriculture</strong>, <strong className="text-white">Smart Energy Monitoring</strong>, <strong className="text-white">AI CCTV Surveillance</strong>, and <strong className="text-white">DevOps CI/CD Web Application</strong>.
+            <p className="text-sm text-[#647067] mt-1">
+              Multi-disciplinary projects with defined roles for 2 to 4 students (Hardware, Firmware, UI, & Report).
             </p>
+          </div>
+
+          <Link
+            href="/setup"
+            className="text-xs sm:text-sm font-bold text-[#087443] hover:underline flex items-center gap-1"
+          >
+            <span>Launch a team workspace</span>
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {teamProjects.map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+        </div>
+      </section>
+
+      {/* ── 9. RECENTLY ADDED ───────────────────────────────────────────────────── */}
+      <section className="py-14 bg-white border-y border-[#E2E8E4]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+            <div>
+              <div className="text-xs font-bold font-mono uppercase tracking-wider text-[#087443] mb-1.5 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#16A34A]" />
+                <span>New Releases</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#17211B] tracking-tight">
+                Recently Added
+              </h2>
+              <p className="text-sm text-[#647067] mt-1">
+                Freshly verified designs added by mentors and engineering researchers this semester.
+              </p>
+            </div>
+
+            <Link
+              href="/projects?sort=newest"
+              className="text-xs sm:text-sm font-bold text-[#087443] hover:underline flex items-center gap-1"
+            >
+              <span>View newest additions</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {flagshipProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} featured={true} />
+            {recentlyAdded.map((project) => (
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="text-center mt-12">
+      {/* ── 10. WHY HA LABS? ─────────────────────────────────────────────────────── */}
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="text-xs font-bold font-mono uppercase tracking-wider text-[#087443] mb-1.5 inline-flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-[#087443]" />
+            <span>Academic Excellence Guarantee</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-black text-[#17211B] tracking-tight">
+            Why HA Labs?
+          </h2>
+          <p className="text-base text-[#647067] mt-2">
+            We bridge the gap between theoretical engineering lectures and physical, functioning hardware & code.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="ha-card p-6 rounded-2xl bg-white border border-[#E2E8E4] space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#087443]/10 text-[#087443] flex items-center justify-center">
+              <Cpu className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-[#17211B]">Verified Schematics & Code</h3>
+            <p className="text-xs sm:text-sm text-[#647067] leading-relaxed">
+              Every circuit pinout, PCB layout, and firmware code is bench-tested on real hardware to eliminate compile errors.
+            </p>
+          </div>
+
+          <div className="ha-card p-6 rounded-2xl bg-white border border-[#E2E8E4] space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#16A34A]/10 text-[#16A34A] flex items-center justify-center">
+              <Layers className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-[#17211B]">Exact BOM & Budgeting</h3>
+            <p className="text-xs sm:text-sm text-[#647067] leading-relaxed">
+              Transparent component lists with Indian market component pricing, Amazon/Robu links, and low-cost alternatives.
+            </p>
+          </div>
+
+          <div className="ha-card p-6 rounded-2xl bg-white border border-[#E2E8E4] space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-[#84CC16]/20 text-[#087443] flex items-center justify-center">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-[#17211B]">External Viva Defense Q&A</h3>
+            <p className="text-xs sm:text-sm text-[#647067] leading-relaxed">
+              Curated question banks answering the exact tough questions asked by university external examiners and HODs.
+            </p>
+          </div>
+
+          <div className="ha-card p-6 rounded-2xl bg-white border border-[#E2E8E4] space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center">
+              <FolderGit2 className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-[#17211B]">IEEE Report & Slide Deck</h3>
+            <p className="text-xs sm:text-sm text-[#647067] leading-relaxed">
+              Download editable DOCX IEEE standard project documentation, block flowcharts, and 15-minute review slides.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 11. CTA BANNER — BUILD YOUR FIRST PROJECT ────────────────────────────── */}
+      <section className="py-16 bg-[#087443] text-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <span className="px-3.5 py-1 rounded-full bg-white/15 text-white text-xs font-mono font-bold tracking-wider uppercase border border-white/20">
+            Start Your Engineering Journey
+          </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
+            Build Your First Project Today
+          </h2>
+          <p className="text-base sm:text-lg text-emerald-100 max-w-2xl mx-auto font-normal">
+            Form your team, pick a department project, access full schematics, and complete your semester project with complete confidence.
+          </p>
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/setup"
+              className="px-7 py-3.5 rounded-xl bg-white text-[#087443] hover:bg-emerald-50 font-bold text-sm sm:text-base shadow-lg transition-all hover:scale-[1.02]"
+            >
+              Start Building Now
+            </Link>
             <Link
               href="/projects"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/20 text-white font-semibold text-sm transition-all"
+              className="px-7 py-3.5 rounded-xl bg-emerald-800/80 hover:bg-emerald-800 text-white font-bold text-sm sm:text-base border border-emerald-600 transition-all"
             >
-              <span>View All Projects in Catalog</span>
-              <ArrowRight className="w-4 h-4" />
+              Browse All Projects
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 8. HOW IT WORKS TIMELINE                                     */}
-      {/* ============================================================ */}
-      <section id="how-it-works" className="py-20 bg-[#050814] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-brand-cyan text-xs font-mono mb-3">
-              <GitBranch className="w-3.5 h-3.5" />
-              <span>THE 7-PHASE FRAMEWORK</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              One platform. Your entire project journey.
-            </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              From day one of ideation to final viva presentation, HA Labs gives you an uninterrupted roadmap.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
-            {howItWorksSteps.map((step, i) => (
-              <div
-                key={i}
-                className="relative rounded-2xl bg-[#090f20]/70 border border-white/10 p-5 flex flex-col justify-between hover:border-brand-cyan/40 transition-all group"
-              >
-                <div>
-                  <span className="text-2xl font-black font-mono text-brand-cyan/40 group-hover:text-brand-cyan transition-colors">
-                    {step.num}
-                  </span>
-                  <h3 className="text-lg font-bold text-white mt-2 mb-2">
-                    {step.title}
-                  </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    {step.desc}
-                  </p>
-                </div>
-                <div className="pt-4 mt-4 border-t border-white/5">
-                  <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-brand-cyan rounded-full"
-                      style={{ width: `${((i + 1) / 7) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 9. PROJECT BUILDER (MODULAR CUSTOMIZER)                      */}
-      {/* ============================================================ */}
-      <ProjectBuilder />
-
-      {/* ============================================================ */}
-      {/* 10. SPECIALIZED AI ASSISTANT                                 */}
-      {/* ============================================================ */}
-      <AiAssistant />
-
-      {/* ============================================================ */}
-      {/* 11. STUDENT DASHBOARD PREVIEW                                */}
-      {/* ============================================================ */}
-      <section className="py-20 bg-[#060913] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-mono mb-3">
-              <Laptop className="w-3.5 h-3.5" />
-              <span>STUDENT WORKSPACE PREVIEW</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Everything your project needs, in one workspace.
-            </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              Track your build progress, download circuit schematics, simulate viva examinations, and request mentor debugging assistance in a unified SaaS interface.
-            </p>
-          </div>
-
-          {/* Interactive Workspace Window */}
-          <div className="max-w-5xl mx-auto rounded-3xl bg-[#090f20] border border-white/15 shadow-2xl overflow-hidden">
-            {/* Top Bar */}
-            <div className="px-6 py-3.5 bg-[#0d162d] border-b border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-red-500/80" />
-                  <span className="w-3 h-3 rounded-full bg-amber-500/80" />
-                  <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
-                </div>
-                <span className="text-xs font-mono text-slate-300 font-semibold pl-2">
-                  HA Labs Student Workspace — portal.halabs.tech
-                </span>
-              </div>
-              <span className="text-[11px] font-mono text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded border border-cyan-500/20">
-                Pro Student
-              </span>
-            </div>
-
-            {/* Dashboard Content Grid */}
-            <div className="p-6 sm:p-8 space-y-6">
-              {/* Main Active Project Card */}
-              <div className="p-6 rounded-2xl bg-[#0c152a] border border-brand-cyan/30 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 shadow-glow-cyan">
-                <div className="space-y-2 max-w-xl">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded text-xs font-mono bg-brand-cyan/20 text-brand-cyan font-bold">
-                      ACTIVE PROJECT
-                    </span>
-                    <span className="text-xs text-slate-400 font-mono">Final Year • ECE</span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-white">Smart Parking System</h3>
-                  <p className="text-xs text-slate-400">
-                    ESP32 + Ultrasonic Sonar Array + AWS EC2 Telemetry Pipeline
-                  </p>
-
-                  {/* Progress Bar */}
-                  <div className="pt-2">
-                    <div className="flex items-center justify-between text-xs font-mono text-slate-300 mb-1.5">
-                      <span>Build Milestone Completion</span>
-                      <span className="font-bold text-brand-cyan">75%</span>
-                    </div>
-                    <div className="w-full h-2.5 bg-black/40 rounded-full overflow-hidden border border-white/10">
-                      <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full w-3/4" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2 w-full lg:w-auto">
-                  <Link
-                    href="/dashboard"
-                    className="px-5 py-2.5 rounded-xl bg-brand-cyan hover:bg-cyan-300 text-black font-bold text-xs text-center transition-all"
-                  >
-                    Open Active Workspace
-                  </Link>
-                  <Link
-                    href="/projects/smart-parking-system"
-                    className="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs text-center transition-colors"
-                  >
-                    View Project Details
-                  </Link>
-                </div>
-              </div>
-
-              {/* Checklist & Micro-Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* Checklist column */}
-                <div className="md:col-span-2 p-5 rounded-2xl bg-black/30 border border-white/10 space-y-3">
-                  <span className="text-xs font-mono uppercase tracking-wider text-slate-400 block">
-                    Milestone Checklist
-                  </span>
-                  <div className="space-y-2 text-xs">
-                    <div className="flex items-center gap-2 text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                      <span className="line-through text-slate-400">Requirements & Scope Analysis</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                      <span className="line-through text-slate-400">Hardware Setup & Breadboard Calibration</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                      <span className="line-through text-slate-400">Backend API & Database Schemas</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                      <span className="line-through text-slate-400">Frontend Dashboard Heatmap</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-cyan-300 font-semibold">
-                      <ArrowRight className="w-4 h-4 flex-shrink-0 text-cyan-400 animate-pulse" />
-                      <span>AWS Cloud Deployment (In Progress)</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-slate-400">
-                      <Clock className="w-4 h-4 flex-shrink-0" />
-                      <span>Documentation & Viva Preparation</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Micro Card 1: Next Task */}
-                <div className="p-4 rounded-2xl bg-black/30 border border-white/10 flex flex-col justify-between">
-                  <div>
-                    <span className="text-[10px] uppercase font-mono text-slate-400 block mb-1">
-                      Next Step
-                    </span>
-                    <h4 className="text-sm font-bold text-white">Cloud Deployment</h4>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Run Docker container on EC2 instance and bind DNS.
-                    </p>
-                  </div>
-                  <span className="text-[11px] font-mono text-brand-cyan mt-3 block">
-                    Estimated 2 hours
-                  </span>
-                </div>
-
-                {/* Micro Card 2: Downloads & Support */}
-                <div className="p-4 rounded-2xl bg-black/30 border border-white/10 flex flex-col justify-between">
-                  <div>
-                    <span className="text-[10px] uppercase font-mono text-slate-400 block mb-1">
-                      Package Assets
-                    </span>
-                    <h4 className="text-sm font-bold text-white">8 Files Available</h4>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Source code, circuit schematic, IEEE report template, PPT slides.
-                    </p>
-                  </div>
-                  <span className="text-[11px] font-mono text-emerald-400 mt-3 block">
-                    All assets verified
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 12. STUDENT SUPPORT                                          */}
-      {/* ============================================================ */}
-      <section className="py-20 bg-[#070b16] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Stuck? Don't stop building.
-            </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              Real engineering involves debugging. Whether it is a frozen I2C bus, a Docker container crashing on AWS, or preparing tough answers for external examiners, we provide direct engineering support.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-4xl mx-auto mb-10">
-            {supportCategories.map((item, idx) => (
-              <span
-                key={idx}
-                className="px-4 py-2 rounded-xl bg-surface-50 border border-white/10 text-xs font-mono text-slate-300 hover:border-brand-cyan/40 hover:text-white transition-colors"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
-
-          <div className="text-center">
-            <Link
-              href="/signup?ref=support"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-cyan-500/20 transition-all"
-            >
-              <span>Get Project Support</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 13. FOR COLLEGES                                             */}
-      {/* ============================================================ */}
-      <section id="colleges" className="py-20 bg-[#060913] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-6 space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-purple/10 border border-brand-purple/30 text-indigo-300 text-xs font-mono">
-                <Building2 className="w-3.5 h-3.5" />
-                <span>INSTITUTIONAL PARTNERSHIPS</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                A project ecosystem for colleges, too.
-              </h2>
-              <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-                Give faculty a better way to manage student projects, teams, reviews, progress, and documentation. Eliminate fake copy-pasted projects with verified milestone repositories and reproducible live demonstrations.
-              </p>
-
-              <div className="space-y-3 pt-2">
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-brand-cyan flex-shrink-0 mt-0.5" />
-                  <p className="text-xs sm:text-sm text-slate-300">
-                    <strong className="text-white">Department Dashboard:</strong> Track all batch projects across ECE, EEE, CSE, IT, and AI & DS in one screen.
-                  </p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-brand-cyan flex-shrink-0 mt-0.5" />
-                  <p className="text-xs sm:text-sm text-slate-300">
-                    <strong className="text-white">Plagiarism Elimination:</strong> Verified GitHub commit histories and hardware build logs.
-                  </p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-brand-cyan flex-shrink-0 mt-0.5" />
-                  <p className="text-xs sm:text-sm text-slate-300">
-                    <strong className="text-white">Review Milestone Automation:</strong> Standardized PPT rubrics, thesis formats, and evaluation metrics.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <Link
-                  href="/colleges"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold text-sm transition-all"
-                >
-                  <span>Explore College Portal</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Mock Faculty Review Dashboard */}
-            <div className="lg:col-span-6 rounded-3xl bg-[#0b1326] border border-white/15 p-6 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                <div className="flex items-center gap-2">
-                  <Users2 className="w-4 h-4 text-brand-cyan" />
-                  <span className="text-sm font-bold text-white">Faculty Project Review Panel</span>
-                </div>
-                <span className="text-xs font-mono text-slate-400">Department: ECE / CSE</span>
-              </div>
-
-              {/* Team Progress Rows */}
-              <div className="space-y-3">
-                <div className="p-4 rounded-xl bg-black/40 border border-white/5 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-white font-bold">Team 01 — Smart Parking System</span>
-                    <span className="text-emerald-400 font-bold">80% On Track</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-400 rounded-full w-4/5" />
-                  </div>
-                  <span className="text-[11px] text-slate-400 block">Milestone: AWS Cloud Telemetry Verified</span>
-                </div>
-
-                <div className="p-4 rounded-xl bg-black/40 border border-white/5 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-white font-bold">Team 02 — Smart Agriculture & Soil IoT</span>
-                    <span className="text-sky-400 font-bold">65% Progress</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-sky-400 rounded-full w-2/3" />
-                  </div>
-                  <span className="text-[11px] text-slate-400 block">Milestone: Relay Valve & MQTT Integration</span>
-                </div>
-
-                <div className="p-4 rounded-xl bg-black/40 border border-white/5 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-white font-bold">Team 03 — EV Charging Load Balancer</span>
-                    <span className="text-emerald-400 font-bold">92% Ready</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-400 rounded-full w-[92%]" />
-                  </div>
-                  <span className="text-[11px] text-slate-400 block">Milestone: Pre-Viva Mock Scheduled</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 14. PRICING                                                  */}
-      {/* ============================================================ */}
-      <section id="pricing" className="py-20 bg-[#070b16] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-brand-cyan text-xs font-mono mb-3">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>TRANSPARENT PRICING</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Start free. Build when you're ready.
-            </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              No hidden fees. Honest engineering pricing designed for student budgets.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
-            {/* Plan 1: FREE */}
-            <div className="rounded-3xl bg-[#090f20] border border-white/10 p-8 flex flex-col justify-between">
-              <div>
-                <span className="text-xs font-mono text-slate-400 uppercase tracking-wider font-bold">
-                  FREE
-                </span>
-                <div className="mt-3 mb-6">
-                  <span className="text-4xl font-extrabold text-white font-mono">₹0</span>
-                  <span className="text-xs text-slate-400 ml-2">Forever free</span>
-                </div>
-                <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                  Discover topics, check architecture diagrams, and plan your semester roadmap.
-                </p>
-
-                <ul className="space-y-3 text-xs text-slate-300">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Project ideas & problem statements</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Technology & component specifications</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Estimated budgets and difficulty levels</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>System architecture flowcharts</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Basic algorithmic recommendations</span>
-                  </li>
-                </ul>
-              </div>
-
-              <Link
-                href="/projects"
-                className="mt-8 w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white font-semibold text-xs text-center transition-colors"
-              >
-                Explore Free Projects
-              </Link>
-            </div>
-
-            {/* Plan 2: STUDENT (HIGHLIGHTED) */}
-            <div className="rounded-3xl bg-gradient-to-b from-[#111c34] to-[#0a1020] border-2 border-brand-cyan p-8 flex flex-col justify-between shadow-glow-cyan relative">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-brand-cyan text-black font-mono font-bold text-xs">
-                MOST POPULAR FOR STUDENTS
-              </div>
-
-              <div>
-                <span className="text-xs font-mono text-cyan-300 uppercase tracking-wider font-bold">
-                  STUDENT PACKAGE
-                </span>
-                <div className="mt-3 mb-6">
-                  <span className="text-4xl font-extrabold text-white font-mono">₹499–₹999</span>
-                  <span className="text-xs text-slate-400 ml-2">Per project package</span>
-                </div>
-                <p className="text-xs text-slate-300 mb-6 leading-relaxed">
-                  The complete production starter pack to build, debug, and document your semester project.
-                </p>
-
-                <ul className="space-y-3 text-xs text-slate-200">
-                  <li className="flex items-center gap-2 font-medium">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Full verified source code repositories</span>
-                  </li>
-                  <li className="flex items-center gap-2 font-medium">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>High-res circuit diagrams & pinout sheets</span>
-                  </li>
-                  <li className="flex items-center gap-2 font-medium">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>IEEE standard project report template (DOCX)</span>
-                  </li>
-                  <li className="flex items-center gap-2 font-medium">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Review presentation PPT templates</span>
-                  </li>
-                  <li className="flex items-center gap-2 font-medium">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Setup & driver installation guides</span>
-                  </li>
-                  <li className="flex items-center gap-2 font-medium">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Curated viva defense questions & answers</span>
-                  </li>
-                </ul>
-              </div>
-
-              <Link
-                href="/projects"
-                className="mt-8 w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs text-center shadow-lg shadow-cyan-500/25 transition-all"
-              >
-                Get Student Package
-              </Link>
-            </div>
-
-            {/* Plan 3: PREMIUM */}
-            <div className="rounded-3xl bg-[#090f20] border border-white/10 p-8 flex flex-col justify-between">
-              <div>
-                <span className="text-xs font-mono text-slate-400 uppercase tracking-wider font-bold">
-                  PREMIUM
-                </span>
-                <div className="mt-3 mb-6">
-                  <span className="text-4xl font-extrabold text-white font-mono">₹1,999–₹5,000+</span>
-                  <span className="text-xs text-slate-400 ml-2">With engineer mentorship</span>
-                </div>
-                <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                  For advanced final year capstones requiring customized hardware, AWS deployments, and 1-on-1 debugging.
-                </p>
-
-                <ul className="space-y-3 text-xs text-slate-300">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Everything in Student package</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Custom sensor & hardware adaptation</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Live 1-on-1 engineer debugging sessions</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Live cloud deployment assistance (AWS/Docker)</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-brand-cyan" />
-                    <span>Pre-viva mock review & defense coaching</span>
-                  </li>
-                </ul>
-              </div>
-
-              <Link
-                href="/signup?ref=premium"
-                className="mt-8 w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white font-semibold text-xs text-center transition-colors"
-              >
-                Talk to HA Labs
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 15. MENTORS                                                  */}
-      {/* ============================================================ */}
-      <section id="mentors" className="py-20 bg-[#060913] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-brand-cyan text-xs font-mono mb-3">
-              <Users2 className="w-3.5 h-3.5" />
-              <span>PRACTITIONER NETWORK</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Connect with people who build.
-            </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base">
-              Learn from engineers working across IoT, Embedded systems, Cloud, DevOps, AI, and Robotics. (Sample demo profiles below)
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {sampleMentors.map((mentor, idx) => (
-              <div
-                key={idx}
-                className="p-6 rounded-2xl bg-[#0a1020] border border-white/10 hover:border-brand-cyan/40 transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 rounded-full bg-surface-100 border border-brand-cyan/30 flex items-center justify-center font-bold text-brand-cyan font-mono">
-                      {mentor.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <span className="text-[10px] font-mono bg-white/5 px-2 py-0.5 rounded text-slate-400">
-                      Sample Profile
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-bold text-white">{mentor.name}</h3>
-                  <p className="text-xs font-semibold text-brand-cyan mt-0.5">{mentor.specialization}</p>
-                  <p className="text-xs text-slate-400 mt-2">{mentor.experience}</p>
-                  <div className="mt-4 p-2.5 rounded-lg bg-black/40 border border-white/5 text-[11px] font-mono text-slate-300">
-                    Focus: {mentor.focus}
-                  </div>
-                </div>
-                <div className="pt-4 mt-4 border-t border-white/5 text-[11px] text-slate-400 font-mono">
-                  {mentor.availability}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-10">
-            <Link
-              href="/signup?ref=mentorship"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-slate-200 text-xs font-semibold transition-all"
-            >
-              <span>Explore Mentorship Network</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 16. RESOURCES PREVIEW                                        */}
-      {/* ============================================================ */}
-      <section id="resources" className="py-20 bg-[#070c18] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-mono mb-3">
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>KNOWLEDGE BASE</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Developer & Engineering Resources
-              </h2>
-            </div>
-            <Link
-              href="/resources"
-              className="inline-flex items-center gap-1.5 text-brand-cyan hover:underline font-mono text-sm"
-            >
-              <span>View all guides</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[
-              { title: 'ESP32 Wi-Fi & BLE Guide', desc: 'ADC calibration, deep sleep, and FreeRTOS tasks.' },
-              { title: 'AWS Cloud Deployment', desc: 'EC2 setup, security groups, and Docker swarm.' },
-              { title: 'Docker for Students', desc: 'Containerizing Node.js, Python, and MySQL.' },
-              { title: 'Viva Defense Handbook', desc: 'Top 50 examiner traps and model answers.' },
-              { title: 'Git & GitHub Workflows', desc: 'Branches, pull requests, and commit discipline.' },
-              { title: 'Arduino Sensor Basics', desc: 'Debounce timers, analog sampling, and I2C.' },
-              { title: 'IEEE Project Report Kit', desc: 'Abstract, literature survey, and bibtex formatting.' },
-              { title: 'Linux Server Cheat Sheet', desc: 'SSH keys, systemd services, and journalctl logs.' },
-            ].map((res, i) => (
-              <Link
-                key={i}
-                href="/resources"
-                className="p-4 rounded-xl bg-[#0a1020] border border-white/10 hover:border-brand-cyan/40 transition-all group"
-              >
-                <h4 className="text-sm font-bold text-white group-hover:text-brand-cyan transition-colors mb-1">
-                  {res.title}
-                </h4>
-                <p className="text-xs text-slate-400 line-clamp-2">
-                  {res.desc}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 17. ABOUT HA LABS & FOUNDERS                                 */}
-      {/* ============================================================ */}
-      <section id="about" className="py-20 bg-[#050814] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-mono mb-3">
-              <Terminal className="w-3.5 h-3.5" />
-              <span>THE FOUNDING TEAM</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Built by engineers. For engineers.
-            </h2>
-            <p className="mt-3 text-slate-400 text-sm sm:text-base leading-relaxed">
-              HA Labs was founded by Harish and Ajithkumar to bridge the gap between abstract textbook theory and real, working, deployable technology systems.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Founder 1: Ajithkumar */}
-            <div className="p-8 rounded-3xl bg-[#090f20] border border-brand-cyan/30 shadow-glow-cyan space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-mono text-brand-cyan uppercase tracking-wider font-bold">
-                    TECHNICAL / PRODUCT
-                  </span>
-                  <h3 className="text-2xl font-bold text-white mt-1">Ajithkumar</h3>
-                </div>
-                <div className="w-12 h-12 rounded-2xl bg-brand-cyan/10 border border-brand-cyan/30 flex items-center justify-center font-bold text-brand-cyan font-mono text-lg">
-                  A
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Leads technical architecture, cloud deployments, developer infrastructure, and platform systems.
-              </p>
-
-              <div className="pt-2">
-                <span className="text-[10px] uppercase font-mono text-slate-400 tracking-wider block mb-2">
-                  Areas of Focus:
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {['Cloud', 'DevOps', 'AWS', 'AI', 'Backend', 'Infrastructure', 'Deployment', 'Security'].map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2.5 py-1 rounded text-xs font-mono bg-white/5 border border-white/10 text-slate-300"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Founder 2: Harish */}
-            <div className="p-8 rounded-3xl bg-[#090f20] border border-white/15 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-mono text-slate-400 uppercase tracking-wider font-bold">
-                    BUSINESS / PROJECT / OPERATIONS
-                  </span>
-                  <h3 className="text-2xl font-bold text-white mt-1">Harish</h3>
-                </div>
-                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/15 flex items-center justify-center font-bold text-white font-mono text-lg">
-                  H
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Leads project research, hardware engineering validation, student requirements, testing protocols, and college relationships.
-              </p>
-
-              <div className="pt-2">
-                <span className="text-[10px] uppercase font-mono text-slate-400 tracking-wider block mb-2">
-                  Areas of Focus:
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    'Project Research',
-                    'Hardware',
-                    'Student Requirements',
-                    'Documentation',
-                    'Testing',
-                    'Operations',
-                    'Customer Support',
-                    'College Relationships'
-                  ].map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2.5 py-1 rounded text-xs font-mono bg-white/5 border border-white/10 text-slate-300"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 18. MISSION & FUTURE VISION                                  */}
-      {/* ============================================================ */}
-      <section className="py-24 bg-[#070b16] border-t border-white/5 relative tech-grid-bg">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-mono">
-            <Award className="w-3.5 h-3.5" />
-            <span>OUR MISSION</span>
-          </div>
-
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-            "Make engineering projects more practical, accessible, and real-world focused."
-          </h2>
-
-          <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            We believe students shouldn't spend their final year searching for disconnected, broken project files. They should have a clear path to build something meaningful that they understand down to the transistor and API call.
-          </p>
-
-          {/* Future Ecosystem Pipeline */}
-          <div className="pt-10">
-            <div className="p-6 rounded-3xl bg-[#090f20]/90 border border-white/10 max-w-3xl mx-auto">
-              <span className="text-xs font-mono uppercase tracking-wider text-slate-400 block mb-3">
-                We're building more than a project marketplace.
-              </span>
-              <p className="text-xs text-slate-300 mb-6">
-                HA Labs aims to become an engineering project ecosystem connecting students, projects, hardware, mentors, colleges, and technology.
-              </p>
-
-              <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-mono">
-                {['Students', 'Projects', 'Hardware', 'Software', 'Cloud', 'Mentors', 'Colleges', 'AI'].map((node, i, arr) => (
-                  <React.Fragment key={node}>
-                    <span className="px-3 py-1 rounded-lg bg-surface-50 border border-white/10 text-white font-semibold">
-                      {node}
-                    </span>
-                    {i < arr.length - 1 && <span className="text-brand-cyan font-bold">→</span>}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 19. FINAL CTA                                                */}
-      {/* ============================================================ */}
-      <section className="py-28 border-t border-white/10 text-center relative overflow-hidden bg-[#04060d]">
-        {/* Ambient Glows */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-cyan/10 rounded-full blur-[130px] pointer-events-none" />
-        <div className="absolute top-0 left-0 w-64 h-64 bg-brand-indigo/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Label */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-mono mb-6">
-            <span className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse" />
-            <span>START BUILDING TODAY</span>
-          </div>
-
-          <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-tight">
-            Your next project
-            <br />
-            <span className="text-gradient-cyan">starts here.</span>
-          </h2>
-
-          <p className="mt-5 text-base sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Don't just submit a project. Build something real — that you understand down to the last transistor, API call, and deployment config.
-          </p>
-
-          {/* Trust Social Proof */}
-          <div className="mt-8 inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-sm">
-            <div className="flex -space-x-2">
-              {['AK', 'VK', 'SR', 'DS', 'NR'].map((initials, i) => (
-                <div key={i} className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500/40 to-blue-600/40 border-2 border-[#04060d] flex items-center justify-center text-[9px] font-bold text-white">{initials}</div>
-              ))}
-            </div>
-            <div className="text-left">
-              <div className="text-white font-semibold text-xs">1,420+ students already building</div>
-              <div className="flex items-center gap-1 text-amber-400 text-[10px]">
-                {'★★★★★'.split('').map((s, i) => <span key={i}>{s}</span>)}
-                <span className="text-slate-400 ml-1">4.9/5 avg rating</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/projects"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-base shadow-xl shadow-cyan-500/30 flex items-center justify-center gap-2 group transition-all hover:scale-[1.02]"
-            >
-              <span>Explore All 20 Projects</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/dashboard"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 text-white font-semibold text-base transition-all"
-            >
-              Open Student Workspace
-            </Link>
-          </div>
-
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 font-mono">
-            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-brand-cyan" />Verified Circuit Schematics</span>
-            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-brand-cyan" />Real Source Code</span>
-            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-brand-cyan" />IEEE Report Templates</span>
-            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-brand-cyan" />Viva Defense Ready</span>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

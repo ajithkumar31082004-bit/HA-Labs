@@ -1,27 +1,27 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import ClientShell from '@/components/ClientShell';
+import { ProjectStoreProvider } from '@/context/ProjectStoreContext';
 
 export const metadata: Metadata = {
-  title: 'HA Labs — Engineering Projects. Built for Reality.',
-  description: 'HA Labs helps engineering students find, build, deploy, document, and present real-world engineering projects. Founded by Harish and Ajithkumar.',
+  title: 'HA Labs — Engineering Projects & Prototyping Platform',
+  description: 'HA Labs helps engineering students find, build, deploy, document, and present real-world engineering projects across ECE, CSE, IT, EEE, MECH, CIVIL, and AI/DS.',
   keywords: [
     'engineering projects',
-    'final year projects',
+    'HA Labs',
     'ECE projects',
     'CSE projects',
     'IoT projects',
-    'ESP32',
-    'AWS Cloud',
-    'DevOps',
-    'Robotics',
+    'Embedded systems',
+    'AI projects',
+    'final year projects',
     'viva preparation',
-    'HA Labs',
+    'circuit schematics',
   ],
   authors: [{ name: 'HA Labs' }, { name: 'Harish' }, { name: 'Ajithkumar' }],
   openGraph: {
-    title: 'HA Labs — Engineering Projects. Built for Reality.',
-    description: 'From Project Idea to Working Prototype. Discover, build, deploy, and understand real engineering projects.',
+    title: 'HA Labs — Engineering Projects & Prototyping Platform',
+    description: 'Build. Learn. Create. Innovate. Discover engineering projects, build with your friends, develop real-world skills, and turn ideas into working prototypes.',
     url: 'https://halabs.tech',
     siteName: 'HA Labs',
     locale: 'en_US',
@@ -38,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark scroll-smooth">
+    <html lang="en" className="scroll-smooth">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -47,8 +47,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans antialiased bg-[#060913] text-slate-100">
-        <ClientShell>{children}</ClientShell>
+      <body className="font-sans antialiased bg-[#F8FAF9] text-[#17211B]">
+        <ProjectStoreProvider>
+          <ClientShell>{children}</ClientShell>
+        </ProjectStoreProvider>
       </body>
     </html>
   );

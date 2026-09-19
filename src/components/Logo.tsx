@@ -16,25 +16,20 @@ export function LogoMark({ className = "w-8 h-8" }: { className?: string }) {
       className={className}
     >
       <defs>
-        <linearGradient id="ha-glow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#38bdf8" />
-          <stop offset="50%" stopColor="#00d2ff" />
-          <stop offset="100%" stopColor="#2563eb" />
+        <linearGradient id="ha-emerald-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#087443" />
+          <stop offset="50%" stopColor="#16A34A" />
+          <stop offset="100%" stopColor="#84CC16" />
         </linearGradient>
-        <filter id="glow-filter" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
       </defs>
 
       {/* Outer Triangle A-Frame */}
       <path
         d="M60 22 L24 95 L96 95 Z"
-        stroke="url(#ha-glow-gradient)"
-        strokeWidth="6"
+        stroke="url(#ha-emerald-gradient)"
+        strokeWidth="6.5"
         strokeLinejoin="round"
         strokeLinecap="round"
-        className="drop-shadow-[0_0_8px_rgba(0,210,255,0.6)]"
       />
 
       {/* Middle A Crossbar / H Top Bridge */}
@@ -43,8 +38,8 @@ export function LogoMark({ className = "w-8 h-8" }: { className?: string }) {
         y1="70"
         x2="84"
         y2="70"
-        stroke="url(#ha-glow-gradient)"
-        strokeWidth="6"
+        stroke="url(#ha-emerald-gradient)"
+        strokeWidth="6.5"
         strokeLinecap="round"
       />
 
@@ -54,15 +49,15 @@ export function LogoMark({ className = "w-8 h-8" }: { className?: string }) {
         y1="70"
         x2="60"
         y2="46"
-        stroke="url(#ha-glow-gradient)"
-        strokeWidth="5"
+        stroke="url(#ha-emerald-gradient)"
+        strokeWidth="5.5"
         strokeLinecap="round"
       />
       <circle
         cx="60"
         cy="42"
-        r="4.5"
-        fill="url(#ha-glow-gradient)"
+        r="5"
+        fill="url(#ha-emerald-gradient)"
       />
 
       {/* Two lower vertical legs forming the H */}
@@ -71,8 +66,8 @@ export function LogoMark({ className = "w-8 h-8" }: { className?: string }) {
         y1="72"
         x2="45"
         y2="97"
-        stroke="url(#ha-glow-gradient)"
-        strokeWidth="6"
+        stroke="url(#ha-emerald-gradient)"
+        strokeWidth="6.5"
         strokeLinecap="round"
       />
       <line
@@ -80,40 +75,35 @@ export function LogoMark({ className = "w-8 h-8" }: { className?: string }) {
         y1="72"
         x2="75"
         y2="97"
-        stroke="url(#ha-glow-gradient)"
-        strokeWidth="6"
+        stroke="url(#ha-emerald-gradient)"
+        strokeWidth="6.5"
         strokeLinecap="round"
       />
 
       {/* Tech Circuit Rings at vertices */}
-      {/* Top Apex Node */}
       <circle
         cx="60"
         cy="19"
-        r="5.5"
-        stroke="url(#ha-glow-gradient)"
+        r="6"
+        stroke="url(#ha-emerald-gradient)"
         strokeWidth="3.5"
-        fill="#060913"
+        fill="#FFFFFF"
       />
-
-      {/* Bottom Left Node */}
       <circle
         cx="20"
         cy="97"
-        r="5.5"
-        stroke="url(#ha-glow-gradient)"
+        r="6"
+        stroke="url(#ha-emerald-gradient)"
         strokeWidth="3.5"
-        fill="#060913"
+        fill="#FFFFFF"
       />
-
-      {/* Bottom Right Node */}
       <circle
         cx="100"
         cy="97"
-        r="5.5"
-        stroke="url(#ha-glow-gradient)"
+        r="6"
+        stroke="url(#ha-emerald-gradient)"
         strokeWidth="3.5"
-        fill="#060913"
+        fill="#FFFFFF"
       />
     </svg>
   );
@@ -122,9 +112,9 @@ export function LogoMark({ className = "w-8 h-8" }: { className?: string }) {
 export function Logo({ size = 'md', showText = true, className = '' }: LogoProps) {
   const sizeMap = {
     sm: { icon: 'w-7 h-7', text: 'text-lg', badge: 'text-[10px]' },
-    md: { icon: 'w-9 h-9', text: 'text-xl', badge: 'text-[11px]' },
-    lg: { icon: 'w-12 h-12', text: 'text-2xl', badge: 'text-xs' },
-    xl: { icon: 'w-16 h-16', text: 'text-4xl', badge: 'text-sm' },
+    md: { icon: 'w-8 h-8', text: 'text-xl', badge: 'text-[11px]' },
+    lg: { icon: 'w-11 h-11', text: 'text-2xl', badge: 'text-xs' },
+    xl: { icon: 'w-14 h-14', text: 'text-3xl', badge: 'text-sm' },
   };
 
   const { icon, text } = sizeMap[size];
@@ -136,17 +126,20 @@ export function Logo({ size = 'md', showText = true, className = '' }: LogoProps
       aria-label="HA Labs Home"
     >
       <div className="relative flex items-center justify-center">
-        <div className="absolute inset-0 bg-brand-cyan/20 blur-md rounded-full group-hover:bg-brand-cyan/40 transition-all duration-300" />
+        <div className="absolute inset-0 bg-[#16A34A]/15 blur-sm rounded-full group-hover:bg-[#16A34A]/25 transition-all duration-300" />
         <LogoMark className={`${icon} relative z-10`} />
       </div>
       {showText && (
         <div className="flex flex-col leading-none">
-          <div className="flex items-center gap-1">
-            <span className={`font-bold tracking-tight text-white font-sans ${text}`}>
+          <div className="flex items-center gap-1.5">
+            <span className={`font-black tracking-tight text-[#17211B] font-sans ${text}`}>
               HA Labs
             </span>
+            <span className="px-1.5 py-0.5 rounded bg-[#087443]/10 text-[#087443] font-mono text-[9px] font-bold uppercase tracking-wider">
+              PRO
+            </span>
           </div>
-          <span className="text-[10px] tracking-wider text-slate-400 font-mono uppercase mt-0.5">
+          <span className="text-[10px] tracking-wider text-[#647067] font-mono uppercase mt-0.5 font-medium">
             Engineering Platform
           </span>
         </div>

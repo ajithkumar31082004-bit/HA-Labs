@@ -1,36 +1,35 @@
 import React from 'react';
 import Link from 'next/link';
 import { Logo } from './Logo';
+import { DEPARTMENTS } from './Navbar';
 import { Github, Linkedin, Youtube, Instagram, ArrowUpRight, ShieldCheck, Terminal, Cpu } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="bg-[#04060d] border-t border-white/10 relative overflow-hidden">
-      {/* Subtle background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-brand-cyan/5 blur-3xl pointer-events-none" />
-
+    <footer className="bg-white border-t border-[#E2E8E4] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12 mb-12">
+          
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-2 space-y-4">
             <Logo size="md" showText={true} />
-            <p className="text-slate-400 text-sm max-w-sm leading-relaxed">
-              Engineering Projects. Built for Reality. Helping students discover, plan, build, deploy, document, and present real-world engineering systems.
+            <p className="text-[#647067] text-sm max-w-sm leading-relaxed">
+              Engineering Projects & Prototyping Platform. Helping students discover, plan, build, deploy, document, and defend real-world engineering systems.
             </p>
             <div className="pt-1">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-50 border border-brand-cyan/30 text-xs text-brand-cyan font-mono">
-                <span className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse" />
-                Find it. Build it. Deploy it.
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#087443]/10 border border-[#087443]/20 text-xs text-[#087443] font-mono font-bold">
+                <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
+                Build. Learn. Create. Innovate.
               </span>
             </div>
             {/* Social Links */}
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center gap-2.5 pt-2">
               <a
                 href="https://github.com"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="HA Labs on GitHub"
-                className="w-9 h-9 rounded-lg bg-surface-50 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-brand-cyan/40 hover:bg-surface-100 transition-all"
+                className="w-8 h-8 rounded-lg bg-[#F8FAF9] border border-[#E2E8E4] flex items-center justify-center text-[#647067] hover:text-[#087443] hover:border-[#087443] transition-all"
               >
                 <Github className="w-4 h-4" />
               </a>
@@ -39,7 +38,7 @@ export function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="HA Labs on LinkedIn"
-                className="w-9 h-9 rounded-lg bg-surface-50 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-brand-cyan/40 hover:bg-surface-100 transition-all"
+                className="w-8 h-8 rounded-lg bg-[#F8FAF9] border border-[#E2E8E4] flex items-center justify-center text-[#647067] hover:text-[#087443] hover:border-[#087443] transition-all"
               >
                 <Linkedin className="w-4 h-4" />
               </a>
@@ -48,137 +47,120 @@ export function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="HA Labs on YouTube"
-                className="w-9 h-9 rounded-lg bg-surface-50 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-brand-cyan/40 hover:bg-surface-100 transition-all"
+                className="w-8 h-8 rounded-lg bg-[#F8FAF9] border border-[#E2E8E4] flex items-center justify-center text-[#647067] hover:text-[#087443] hover:border-[#087443] transition-all"
               >
                 <Youtube className="w-4 h-4" />
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="HA Labs on Instagram"
-                className="w-9 h-9 rounded-lg bg-surface-50 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-brand-cyan/40 hover:bg-surface-100 transition-all"
-              >
-                <Instagram className="w-4 h-4" />
               </a>
             </div>
           </div>
 
-          {/* Column 1: Product */}
+          {/* Departments Column */}
           <div className="space-y-3">
-            <h4 className="text-white text-xs font-semibold tracking-wider uppercase font-mono text-slate-200">
-              Product
+            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[#17211B]">
+              Departments
             </h4>
-            <ul className="space-y-2 text-sm text-slate-400">
+            <ul className="space-y-2 text-xs font-medium">
+              {DEPARTMENTS.slice(0, 5).map((dept) => (
+                <li key={dept.code}>
+                  <Link
+                    href={`/projects?department=${encodeURIComponent(dept.code)}`}
+                    className="text-[#647067] hover:text-[#087443] transition-colors"
+                  >
+                    {dept.code} — {dept.name.split(' ')[0]}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Platforms & Tools Column */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[#17211B]">
+              Workspaces
+            </h4>
+            <ul className="space-y-2 text-xs font-medium text-[#647067]">
               <li>
-                <Link href="/projects" className="hover:text-white transition-colors">
-                  Projects Catalog
+                <Link href="/projects" className="hover:text-[#087443] transition-colors">
+                  Explore Projects
                 </Link>
               </li>
               <li>
-                <Link href="/#ai-assistant" className="hover:text-white transition-colors">
-                  AI Assistant
+                <Link href="/setup" className="hover:text-[#087443] transition-colors">
+                  Start / Build Project
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard" className="hover:text-white transition-colors">
+                <Link href="/dashboard" className="hover:text-[#087443] transition-colors">
                   Student Dashboard
                 </Link>
               </li>
               <li>
-                <Link href="/#mentors" className="hover:text-white transition-colors">
-                  Mentorship
+                <Link href="/admin" className="hover:text-[#087443] transition-colors">
+                  HA Labs Admin
                 </Link>
               </li>
               <li>
-                <Link href="/colleges" className="hover:text-white transition-colors">
-                  For Colleges
+                <Link href="/resources" className="hover:text-[#087443] transition-colors">
+                  Project Resources & BOM
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 2: Resources */}
+          {/* Support & Academic */}
           <div className="space-y-3">
-            <h4 className="text-white text-xs font-semibold tracking-wider uppercase font-mono text-slate-200">
-              Resources
+            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[#17211B]">
+              Academic Help
             </h4>
-            <ul className="space-y-2 text-sm text-slate-400">
+            <ul className="space-y-2 text-xs font-medium text-[#647067]">
               <li>
-                <Link href="/resources" className="hover:text-white transition-colors">
-                  Documentation
+                <Link href="/resources" className="hover:text-[#087443] transition-colors">
+                  IEEE Report Templates
                 </Link>
               </li>
               <li>
-                <Link href="/resources" className="hover:text-white transition-colors">
-                  IoT & ESP32 Guides
+                <Link href="/projects" className="hover:text-[#087443] transition-colors">
+                  Viva Question Bank
                 </Link>
               </li>
               <li>
-                <Link href="/resources" className="hover:text-white transition-colors">
-                  AWS Cloud Architecture
+                <Link href="/about" className="hover:text-[#087443] transition-colors">
+                  About Founders
                 </Link>
               </li>
               <li>
-                <Link href="/resources" className="hover:text-white transition-colors">
-                  Docker & DevOps
-                </Link>
-              </li>
-              <li>
-                <Link href="/resources" className="hover:text-white transition-colors">
-                  Viva Preparation
+                <Link href="/login" className="hover:text-[#087443] transition-colors">
+                  Student Sign In
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 3: Company & Legal */}
-          <div className="space-y-3">
-            <h4 className="text-white text-xs font-semibold tracking-wider uppercase font-mono text-slate-200">
-              Company
-            </h4>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li>
-                <Link href="/about" className="hover:text-white transition-colors">
-                  About HA Labs
-                </Link>
-              </li>
-              <li>
-                <Link href="/about#mission" className="hover:text-white transition-colors">
-                  Our Mission
-                </Link>
-              </li>
-              <li>
-                <Link href="/how-it-works" className="hover:text-white transition-colors">
-                  How It Works
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin" className="hover:text-white transition-colors flex items-center gap-1">
-                  <span>Admin Panel</span>
-                  <ArrowUpRight className="w-3 h-3 text-slate-500" />
-                </Link>
-              </li>
-              <li>
-                <Link href="/api/health" target="_blank" className="hover:text-white transition-colors font-mono text-xs text-slate-500">
-                  /api/health
-                </Link>
-              </li>
-            </ul>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-[#E2E8E4] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#647067]">
+          <div className="flex items-center gap-2">
+            <span>© {new Date().getFullYear()} HA Labs. All rights reserved.</span>
+            <span>·</span>
+            <span className="text-[#087443] font-bold">Engineering Platform PRO</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="/about" className="hover:text-[#087443] transition-colors">
+              About
+            </Link>
+            <Link href="/resources" className="hover:text-[#087443] transition-colors">
+              Documentation
+            </Link>
+            <Link href="/dashboard" className="hover:text-[#087443] transition-colors">
+              Dashboard
+            </Link>
           </div>
         </div>
 
-        {/* Bottom Line */}
-        <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© 2026 HA Labs. All rights reserved. Founded by Harish & Ajithkumar.</p>
-          <div className="flex items-center gap-6">
-            <span className="text-slate-500 hover:text-slate-400 cursor-pointer">Privacy Policy</span>
-            <span className="text-slate-500 hover:text-slate-400 cursor-pointer">Terms of Service</span>
-            <span className="text-slate-500 hover:text-slate-400 cursor-pointer">Refund Policy</span>
-          </div>
-        </div>
       </div>
     </footer>
   );
 }
+
 export default Footer;
